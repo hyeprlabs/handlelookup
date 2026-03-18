@@ -5,7 +5,7 @@ import { LogosSection } from "@/components/logos-section";
 import { CallToAction } from "@/components/cta";
 import { Footer } from "@/components/footer";
 
-export default function page() {
+export default function Page() {
   return (
     <div className="relative flex min-h-screen flex-col overflow-hidden px-4 supports-[overflow:clip]:overflow-clip">
       <Header />
