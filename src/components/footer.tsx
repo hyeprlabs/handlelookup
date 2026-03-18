@@ -2,11 +2,8 @@ import { cn } from "@/lib/utils";
 import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import {
-  FacebookIcon,
-  GithubIcon,
   InstagramIcon,
-  LinkedinIcon,
-  YoutubeIcon,
+  LinkedinIcon
 } from "lucide-react";
 
 export function Footer() {
@@ -130,28 +127,16 @@ const resources = [
 
 const socialLinks = [
   {
-    icon: <FacebookIcon />,
-    link: "#",
-  },
-  {
-    icon: <GithubIcon />,
-    link: "#",
+    icon: <XIcon />,
+    link: "https://x.com/hyeprlabs",
   },
   {
     icon: <InstagramIcon />,
-    link: "#",
+    link: "https://www.instagram.com/hyeprlabs",
   },
   {
     icon: <LinkedinIcon />,
-    link: "#",
-  },
-  {
-    icon: <XIcon />,
-    link: "#",
-  },
-  {
-    icon: <YoutubeIcon />,
-    link: "#",
+    link: "https://www.linkedin.com/company/hyeprlabs",
   },
 ];
 
