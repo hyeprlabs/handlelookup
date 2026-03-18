@@ -1,10 +1,7 @@
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
-import {
-  InstagramIcon,
-  LinkedinIcon
-} from "lucide-react";
+import { InstagramIcon, LinkedinIcon } from "lucide-react";
 
 export function Footer() {
   return (

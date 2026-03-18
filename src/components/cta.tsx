@@ -7,10 +7,10 @@ import Link from "next/link";
 export function CallToAction() {
   return (
     <div className="relative mx-auto flex w-full max-w-5xl flex-col justify-between my-36">
-	  <DecorIcon className="size-4" position="top-left" />
-	  <DecorIcon className="size-4" position="top-right" />
-	  <DecorIcon className="size-4" position="bottom-left" />
-	  <DecorIcon className="size-4" position="bottom-right" />
+      <DecorIcon className="size-4" position="top-left" />
+      <DecorIcon className="size-4" position="top-right" />
+      <DecorIcon className="size-4" position="bottom-left" />
+      <DecorIcon className="size-4" position="bottom-right" />
       <FullWidthDivider className="-top-px" />
       <div className="border-b px-2 py-8">
         <h2 className="text-center font-semibold text-lg md:text-2xl">
