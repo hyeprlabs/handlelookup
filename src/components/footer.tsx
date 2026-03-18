@@ -73,7 +73,7 @@ export function Footer() {
         </div>
         <div className="absolute inset-x-0 h-px w-full bg-border" />
         <div className="flex max-w-4xl flex-col justify-between gap-2 py-4">
-          <p className="text-center font-light text-muted-foreground text-sm">
+          <p className="text-center font-mono text-muted-foreground text-sm">
             &copy; {new Date().getFullYear()} Hyepr Labs UG, All rights reserved
           </p>
         </div>

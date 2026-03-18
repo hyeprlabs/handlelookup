@@ -3,6 +3,7 @@ import { DecorIcon } from "@/components/ui/decor-icon";
 import { FullWidthDivider } from "@/components/ui/full-width-divider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PlatformsGrid } from "@/components/platforms-grid";
 import { ArrowRightIcon } from "lucide-react";
 
 export function HeroSection() {
@@ -28,16 +29,16 @@ export function HeroSection() {
         </div>
         <a
           className={cn(
-            "group mx-auto flex w-fit items-center gap-3 rounded-sm border bg-card p-1 shadow",
+            "group mx-auto flex w-fit items-center gap-3 rounded-full border bg-card p-1 shadow",
             "fade-in slide-in-from-bottom-10 animate-in fill-mode-backwards transition-all delay-500 duration-500 ease-out",
           )}
-          href="#link"
+          href="/blog/launching-handle-lookup-api"
         >
-          <div className="rounded-xs border bg-card px-1.5 py-0.5 shadow-sm">
-            <p className="font-mono text-xs">NOW</p>
+          <div className="rounded-full border bg-card px-1.5 py-0.5 shadow-sm">
+            <p className="font-mono text-xs">Blog</p>
           </div>
 
-          <span className="text-xs">accepting new client projects</span>
+          <span className="text-xs">Launching Handle Lookup API</span>
           <span className="block h-5 border-l" />
 
           <div className="pr-1">
@@ -51,7 +52,7 @@ export function HeroSection() {
             "fade-in slide-in-from-bottom-10 animate-in fill-mode-backwards delay-100 duration-500 ease-out",
           )}
         >
-          Building Digital Experiences That Drive Growth
+          Find Available Handles Across Platforms
         </h1>
 
         <p
@@ -60,18 +61,18 @@ export function HeroSection() {
             "fade-in slide-in-from-bottom-10 animate-in fill-mode-backwards delay-200 duration-500 ease-out",
           )}
         >
-          We help brands scale faster through design, <br /> development and
-          strategic execution.
+          Enter a username once and instantly see where it is available, <br />
+          so you can claim the right handle faster.
         </p>
 
         <form className="fade-in slide-in-from-bottom-10 flex w-fit animate-in items-center justify-center gap-2 fill-mode-backwards pt-2 delay-300 duration-500 ease-out">
           <Input
             aria-label="handle"
             className="h-9"
-            placeholder="Enter handle"
+            placeholder="Try a handle (e.g. alex)"
             type="text"
           />
-          <Button>Check</Button>
+          <Button>Check Availability</Button>
         </form>
       </div>
       <div className="relative">
@@ -81,22 +82,7 @@ export function HeroSection() {
         <DecorIcon className="size-4" position="bottom-right" />
 
         <FullWidthDivider className="-top-px" />
-        <div className="overflow-hidden *:pointer-events-none *:aspect-video *:select-none">
-          <img
-            alt="light app screen"
-            className="dark:hidden"
-            height="auto"
-            src="https://storage.efferd.com/screen/dashboard-light.webp"
-            width="auto"
-          />
-          <img
-            alt="dark app screen"
-            className="hidden dark:block"
-            height="auto"
-            src="https://storage.efferd.com/screen/dashboard-dark.webp"
-            width="auto"
-          />
-        </div>
+        <PlatformsGrid />
         <FullWidthDivider className="-bottom-px" />
       </div>
     </section>
