@@ -3,6 +3,7 @@
 import { useUser } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { CheckIcon, ExternalLinkIcon } from "lucide-react";
+import { TableBody, TableCell, TableHead, TableRow } from "@/components/ui/table";
 
 export type Interval = "monthly" | "yearly";
 
@@ -29,7 +30,7 @@ export type Product = {
   };
 };
 
-type PricingCardProps = {
+type Props = {
   product: Product;
   interval: Interval;
   checkoutUrl?: string;
@@ -39,7 +40,7 @@ export function PricingCard({
   product,
   interval,
   checkoutUrl,
-}: PricingCardProps) {
+}: Props) {
   const { user, isLoaded } = useUser();
   const userPlan = (user?.publicMetadata as { plan?: string } | undefined)
     ?.plan;
@@ -145,22 +146,19 @@ export function PricingCard({
         </div>
 
         <div className="border-t">
-          <table className="w-full border-collapse">
-            <tbody>
-              {usageRows.map(([label, value], index) => (
-                <tr
-                  className={index < usageRows.length - 1 ? "border-b" : ""}
-                  key={label}
-                >
-                  <th className="border-r bg-muted/20 px-3 py-3 text-left text-sm font-medium text-foreground/70">
+          <table className="w-full text-sm">
+            <TableBody>
+              {usageRows.map(([label, value]) => (
+                <TableRow key={label} className="hover:bg-transparent">
+                  <TableHead className="border-r bg-muted/20 py-3 font-medium text-foreground/70">
                     {label}
-                  </th>
-                  <td className="truncate bg-secondary/45 px-3 py-3 text-sm">
+                  </TableHead>
+                  <TableCell className="bg-secondary/45 py-3">
                     {value}
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
+            </TableBody>
           </table>
         </div>
       </div>

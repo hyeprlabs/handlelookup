@@ -84,11 +84,11 @@ export function LogoCloud() {
   );
 }
 
-type LogoCardProps = React.ComponentProps<"div"> & {
+type CardProps = React.ComponentProps<"div"> & {
   logo: Logo;
 };
 
-function LogoCard({ logo, className, children, ...props }: LogoCardProps) {
+function LogoCard({ logo, className, children, ...props }: CardProps) {
   return (
     <div
       className={cn(

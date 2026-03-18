@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { CheckIcon, ExternalLinkIcon, ZapIcon } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
 
 const proFeatures = [
   "50,000 API credits / month",
@@ -154,9 +155,7 @@ export default async function BillingPage() {
               0 / {isPro ? "50,000" : "250"}
             </span>
           </div>
-          <div className="h-2 overflow-hidden rounded-full bg-muted">
-            <div className="h-full w-0 rounded-full bg-primary transition-all" />
-          </div>
+          <Progress value={0} className="h-2" />
           <p className="text-xs text-muted-foreground">
             {isPro
               ? "240 requests / minute · No ads"

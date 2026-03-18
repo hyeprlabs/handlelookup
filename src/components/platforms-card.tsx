@@ -11,19 +11,14 @@ import {
 } from "@/components/ui/card";
 import Link from "next/link";
 
-type PlatformsCardProps = {
+type Props = {
   handle: string;
   name: string;
   status: string;
   url: string;
 };
 
-export function PlatformsCard({
-  handle,
-  name,
-  status,
-  url,
-}: PlatformsCardProps) {
+export function PlatformsCard({ handle, name, status, url }: Props) {
   return (
     <Card className="gap-0 p-0">
       <CardHeader className="flex items-center justify-between px-4 py-2">

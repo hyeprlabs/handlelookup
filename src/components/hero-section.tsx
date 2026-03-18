@@ -2,19 +2,14 @@ import type { ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
 
-type HeroSectionProps = {
+type Props = {
   title: string;
   description: string;
   actions?: ReactNode;
   className?: string;
 };
 
-export function HeroSection({
-  title,
-  description,
-  actions,
-  className,
-}: HeroSectionProps) {
+export function HeroSection({ title, description, actions, className }: Props) {
   return (
     <section className={className}>
       <div className="relative flex flex-col items-center justify-center gap-5 px-4 py-12 md:px-4 md:py-24 lg:py-28">

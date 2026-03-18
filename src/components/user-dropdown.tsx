@@ -3,6 +3,7 @@
 import { useUser, useClerk } from "@clerk/nextjs";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import initials from "initials";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -22,17 +23,6 @@ import {
   LogOutIcon,
 } from "lucide-react";
 
-function getInitials(
-  firstName?: string | null,
-  lastName?: string | null,
-  email?: string,
-) {
-  if (firstName || lastName) {
-    return `${firstName?.[0] ?? ""}${lastName?.[0] ?? ""}`.toUpperCase();
-  }
-  return email?.[0]?.toUpperCase() ?? "U";
-}
-
 export function UserDropdown() {
   const { user } = useUser();
   const { signOut } = useClerk();
@@ -40,13 +30,9 @@ export function UserDropdown() {
 
   if (!user) return null;
 
-  const initials = getInitials(
-    user.firstName,
-    user.lastName,
-    user.emailAddresses[0]?.emailAddress,
-  );
-  const displayName =
+  const name =
     user.fullName || user.emailAddresses[0]?.emailAddress || "User";
+  const abbr = initials(name) as string;
   const email = user.emailAddresses[0]?.emailAddress;
 
   return (
@@ -54,20 +40,16 @@ export function UserDropdown() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon-sm" className="rounded-full">
           <Avatar className="size-7">
-            <AvatarImage src={user.imageUrl} alt={displayName} />
-            <AvatarFallback>{initials}</AvatarFallback>
+            <AvatarImage src={user.imageUrl} alt={name} />
+            <AvatarFallback>{abbr}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel className="px-2 py-2">
-          <div className="text-sm font-medium text-foreground">
-            {displayName}
-          </div>
+          <div className="text-sm font-medium text-foreground">{name}</div>
           {email && (
-            <div className="truncate text-xs text-muted-foreground">
-              {email}
-            </div>
+            <div className="truncate text-xs text-muted-foreground">{email}</div>
           )}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />

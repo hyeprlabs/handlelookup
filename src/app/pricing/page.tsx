@@ -9,6 +9,7 @@ import { HeroSection } from "@/components/hero-section";
 import { CreditsSection } from "@/components/pricing/credits-section";
 import { PricingSection } from "@/components/pricing/pricing-section";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { JsonLd } from "@/components/json-ld";
 
 export const metadata: Metadata = {
@@ -86,7 +87,14 @@ export default function Page() {
           }
         />
 
-        <Suspense>
+        <Suspense
+          fallback={
+            <div className="flex flex-col gap-4 py-8">
+              <Skeleton className="h-80 rounded-2xl" />
+              <Skeleton className="h-48 rounded-2xl" />
+            </div>
+          }
+        >
           <PricingSection />
           <CreditsSection />
         </Suspense>

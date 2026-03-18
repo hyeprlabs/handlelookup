@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { DecorIcon } from "@/components/ui/decor-icon";
 import { FullWidthDivider } from "@/components/ui/full-width-divider";
 
-type SectionShellProps = {
+type Props = {
   title: string;
   description: string;
   children: ReactNode;
@@ -18,7 +18,7 @@ export function SectionShell({
   children,
   className,
   sectionId,
-}: SectionShellProps) {
+}: Props) {
   return (
     <section className={cn("relative mx-auto w-full max-w-5xl", className)}>
       <DecorIcon className="size-4" position="top-left" />

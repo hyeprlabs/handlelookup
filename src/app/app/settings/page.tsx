@@ -12,6 +12,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const notifications = [
   {
@@ -36,10 +38,10 @@ export default function SettingsPage() {
 
   if (!isLoaded) {
     return (
-      <div className="flex flex-col gap-6 animate-pulse">
-        <div className="h-6 w-32 rounded-xl bg-muted" />
-        <div className="h-32 rounded-2xl bg-muted" />
-        <div className="h-48 rounded-2xl bg-muted" />
+      <div className="flex flex-col gap-6">
+        <Skeleton className="h-6 w-32" />
+        <Skeleton className="h-32 rounded-2xl" />
+        <Skeleton className="h-48 rounded-2xl" />
       </div>
     );
   }
@@ -111,12 +113,7 @@ export default function SettingsPage() {
                   </Label>
                   <p className="text-xs text-muted-foreground">{description}</p>
                 </div>
-                <input
-                  id={id}
-                  type="checkbox"
-                  defaultChecked
-                  className="size-4 rounded border-border accent-primary"
-                />
+                <Switch id={id} defaultChecked />
               </div>
             </div>
           ))}

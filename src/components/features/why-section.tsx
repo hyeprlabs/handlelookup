@@ -1,6 +1,14 @@
 import React from "react";
 import { CheckIcon, XIcon } from "lucide-react";
 import { SectionShell } from "@/components/features/api/section-shell";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 const comparisons = [
   {
@@ -33,44 +41,39 @@ export function WhySection() {
       description="DIY platform checking is deceptively complex. Here's what Handle Lookup replaces."
       className="my-12 md:my-16"
     >
-      <div className="relative">
-        <div className="grid grid-cols-[1fr_auto_auto] gap-px bg-border">
-          {/* Header row */}
-          <div className="bg-background px-4 py-3">
-            <p className="font-mono text-[11px] text-muted-foreground uppercase tracking-[0.14em]">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
               Requirement
-            </p>
-          </div>
-          <div className="bg-background px-4 py-3 text-center">
-            <p className="font-mono text-[11px] text-muted-foreground uppercase tracking-[0.14em]">
+            </TableHead>
+            <TableHead className="text-center font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
               DIY
-            </p>
-          </div>
-          <div className="bg-background px-4 py-3 text-center">
-            <p className="font-mono text-[11px] text-muted-foreground uppercase tracking-[0.14em]">
+            </TableHead>
+            <TableHead className="text-center font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
               Handle Lookup
-            </p>
-          </div>
-
-          {/* Data rows */}
+            </TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
           {comparisons.map((row) => (
-            <React.Fragment key={row.point}>
-              <div className="bg-background px-4 py-4">
+            <TableRow key={row.point}>
+              <TableCell className="py-4">
                 <p className="text-sm font-medium">{row.point}</p>
                 <p className="mt-0.5 text-xs text-muted-foreground">
                   {row.withoutUs}
                 </p>
-              </div>
-              <div className="flex items-center justify-center bg-background px-4 py-4">
-                <XIcon className="size-4 text-muted-foreground/50" />
-              </div>
-              <div className="flex items-center justify-center bg-background px-4 py-4">
-                <CheckIcon className="size-4 text-emerald-500" />
-              </div>
-            </React.Fragment>
+              </TableCell>
+              <TableCell className="text-center">
+                <XIcon className="mx-auto size-4 text-muted-foreground/50" />
+              </TableCell>
+              <TableCell className="text-center">
+                <CheckIcon className="mx-auto size-4 text-emerald-500" />
+              </TableCell>
+            </TableRow>
           ))}
-        </div>
-      </div>
+        </TableBody>
+      </Table>
     </SectionShell>
   );
 }
