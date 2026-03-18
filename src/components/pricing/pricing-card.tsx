@@ -1,6 +1,8 @@
+"use client";
+
+import { useUser } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
-import { CheckIcon } from "lucide-react";
-import Link from "next/link";
+import { CheckIcon, ExternalLinkIcon } from "lucide-react";
 
 export type Interval = "monthly" | "yearly";
 
@@ -16,7 +18,7 @@ export type Product = {
   yearlyPrice: string;
   description: string;
   featuresTitle: string;
-  href?: string;
+  isPopular?: boolean;
   usage: {
     monthly: Limits;
     yearly: Limits;
@@ -25,15 +27,24 @@ export type Product = {
     monthly: string[];
     yearly: string[];
   };
-  isPopular?: boolean;
 };
 
 type PricingCardProps = {
   product: Product;
   interval: Interval;
+  checkoutUrl?: string;
 };
 
-export function PricingCard({ product, interval }: PricingCardProps) {
+export function PricingCard({
+  product,
+  interval,
+  checkoutUrl,
+}: PricingCardProps) {
+  const { user, isLoaded } = useUser();
+  const userPlan = (user?.publicMetadata as { plan?: string } | undefined)
+    ?.plan;
+  const isUserPro = userPlan === "pro";
+
   const isYearly = interval === "yearly";
   const displayedPrice = isYearly ? product.yearlyPrice : product.monthlyPrice;
   const periodLabel =
@@ -46,33 +57,74 @@ export function PricingCard({ product, interval }: PricingCardProps) {
     ["Rate limit", usage.rateLimit],
   ];
 
+  // Determine the CTA label, href, and variant based on auth + plan state
+  let ctaHref: string;
+  let ctaLabel: string;
+  let ctaIcon: React.ReactNode = null;
+  let ctaVariant: "default" | "outline" = product.isPopular
+    ? "default"
+    : "outline";
+  const ctaAsChild = true;
+
+  if (product.isPopular) {
+    if (!isLoaded) {
+      ctaHref = "/pricing";
+      ctaLabel = "Get started";
+    } else if (isUserPro) {
+      ctaHref = "/api/portal";
+      ctaLabel = "Manage subscription";
+      ctaVariant = "outline";
+      ctaIcon = <ExternalLinkIcon className="size-3.5" />;
+    } else if (user) {
+      ctaHref = checkoutUrl ?? "/pricing";
+      ctaLabel = "Upgrade to Pro";
+    } else {
+      // Sign in first, then come straight back to checkout
+      ctaHref = checkoutUrl
+        ? `/sign-in?redirect_url=${encodeURIComponent(checkoutUrl)}`
+        : "/sign-in?redirect_url=%2Fpricing";
+      ctaLabel = "Get started";
+    }
+  } else {
+    // Free plan
+    if (user) {
+      ctaHref = "/app/profile";
+      ctaLabel = "Go to dashboard";
+    } else {
+      ctaHref = "/sign-up";
+      ctaLabel = "Get started free";
+    }
+  }
+
   return (
     <div className="flex flex-col bg-background">
       <div className="border-b px-4 py-6">
-        <p className="mb-4 text-muted-foreground text-xs uppercase tracking-wider">
+        <p className="mb-4 text-xs uppercase tracking-wider text-muted-foreground">
           {product.name}
         </p>
         <div className="mb-2 flex items-baseline gap-2">
-          <h2 className="font-bold text-3xl sm:text-4xl">{displayedPrice}</h2>
-          <span className="text-muted-foreground text-xs">{periodLabel}</span>
+          <h2 className="text-3xl font-bold sm:text-4xl">{displayedPrice}</h2>
+          <span className="text-xs text-muted-foreground">{periodLabel}</span>
         </div>
-        <p className="mb-6 text-muted-foreground text-sm leading-relaxed">
+        <p className="mb-6 text-sm leading-relaxed text-muted-foreground">
           {product.description}
         </p>
 
         <Button
-          asChild
-          className="w-full"
-          variant={product.isPopular ? "default" : "outline"}
+          asChild={ctaAsChild}
+          className="w-full gap-1.5"
+          variant={ctaVariant}
         >
-          <Link href={product.href ?? "/"}>Get started</Link>
+          <a href={ctaHref}>
+            {ctaLabel}
+            {ctaIcon}
+          </a>
         </Button>
       </div>
 
-      <div className="text-muted-foreground text-sm">
+      <div className="text-sm text-muted-foreground">
         <div className="px-4 py-6">
           <p className="mb-4 text-xs uppercase">{product.featuresTitle}</p>
-
           <ul className="space-y-3">
             {features.map((feature) => (
               <li
@@ -87,7 +139,7 @@ export function PricingCard({ product, interval }: PricingCardProps) {
         </div>
 
         <div className="border-t px-4 py-3">
-          <p className="font-mono text-[11px] text-muted-foreground uppercase tracking-[0.14em]">
+          <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
             Usage limits
           </p>
         </div>
@@ -100,10 +152,10 @@ export function PricingCard({ product, interval }: PricingCardProps) {
                   className={index < usageRows.length - 1 ? "border-b" : ""}
                   key={label}
                 >
-                  <th className="border-r bg-muted/20 px-3 py-3 text-left font-medium text-foreground/70 text-sm">
+                  <th className="border-r bg-muted/20 px-3 py-3 text-left text-sm font-medium text-foreground/70">
                     {label}
                   </th>
-                  <td className="bg-secondary/45 px-3 py-3 text-sm truncate">
+                  <td className="truncate bg-secondary/45 px-3 py-3 text-sm">
                     {value}
                   </td>
                 </tr>

@@ -5,6 +5,8 @@ import { AtSign } from "lucide-react";
 import { useScroll } from "@/hooks/use-scroll";
 import { Button } from "@/components/ui/button";
 import { MobileNav } from "@/components/mobile-nav";
+import { Show } from "@clerk/nextjs";
+import { UserDropdown } from "@/components/user-dropdown";
 
 export const navLinks = [
   {
@@ -59,10 +61,24 @@ export function Header() {
               </Button>
             ))}
           </div>
-          <Button size="sm" variant="outline">
-            Sign In
-          </Button>
-          <Button size="sm">Upgrade</Button>
+          <Show
+            when="signed-out"
+            fallback={
+              <>
+                <Button asChild size="sm">
+                  <Link href="/pricing">Upgrade</Link>
+                </Button>
+                <UserDropdown />
+              </>
+            }
+          >
+            <Button asChild size="sm" variant="outline">
+              <Link href="/sign-in">Sign In</Link>
+            </Button>
+            <Button asChild size="sm">
+              <Link href="/sign-up">Get Started</Link>
+            </Button>
+          </Show>
         </div>
         <MobileNav />
       </nav>

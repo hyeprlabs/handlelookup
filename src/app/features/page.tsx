@@ -1,15 +1,17 @@
 import Link from "next/link";
 import { ArrowRightIcon } from "lucide-react";
-
 import { cn } from "@/lib/utils";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { HeroSection } from "@/components/hero-section";
-import { CreditsSection } from "@/components/pricing/credits-section";
-import { PricingSection } from "@/components/pricing/pricing-section";
 import { Button } from "@/components/ui/button";
+import { OverviewSection } from "@/components/features/overview-section";
+import { HowItWorksSection } from "@/components/features/how-it-works-section";
+import { UseCasesSection } from "@/components/features/use-cases-section";
+import { PlatformCoverageSection } from "@/components/features/platform-coverage-section";
+import { WhySection } from "@/components/features/why-section";
 
-export default function Page() {
+export default function FeaturesPage() {
   return (
     <div className="relative flex min-h-screen flex-col overflow-hidden px-4 supports-[overflow:clip]:overflow-clip">
       <Header />
@@ -22,25 +24,28 @@ export default function Page() {
         )}
       >
         <HeroSection
-          title="Simple Pricing for Handle Search and API"
-          description="Choose Free for lightweight checks or Pro for ad-free usage, broader platform coverage, and production-grade API volume."
+          title="Everything Handle Lookup does"
+          description="Username availability checking for any platform, from a single API. Here's what that means for your product."
           actions={
             <>
               <Button asChild>
-                <Link href="#pricing">
-                  See plans
+                <Link href="/upgrade">
+                  Get started free
                   <ArrowRightIcon />
                 </Link>
               </Button>
               <Button asChild variant="outline">
-                <Link href="/features/api">View API Docs</Link>
+                <Link href="/features/api">View API docs</Link>
               </Button>
             </>
           }
         />
 
-        <PricingSection />
-        <CreditsSection />
+        <OverviewSection />
+        <HowItWorksSection />
+        <UseCasesSection />
+        <PlatformCoverageSection />
+        <WhySection />
 
         <Footer />
       </main>

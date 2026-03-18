@@ -4,11 +4,10 @@ import { FullWidthDivider } from "@/components/ui/full-width-divider";
 import { DecorIcon } from "@/components/ui/decor-icon";
 import { parseAsStringLiteral, useQueryState } from "nuqs";
 import { IntervalTabs } from "@/components/pricing/interval-tabs";
-import {
-  PricingCard,
-  type Interval,
-  type Product,
-} from "@/components/pricing/pricing-card";
+import { PricingCard, type Product } from "@/components/pricing/pricing-card";
+
+const MONTHLY_PRODUCT_ID = process.env.NEXT_PUBLIC_POLAR_PRODUCT_ID_MONTHLY ?? "";
+const YEARLY_PRODUCT_ID = process.env.NEXT_PUBLIC_POLAR_PRODUCT_ID_YEARLY ?? "";
 
 const products: Product[] = [
   {
@@ -37,7 +36,6 @@ const products: Product[] = [
   {
     name: "PRO",
     isPopular: true,
-    href: "/upgrade",
     monthlyPrice: "$29",
     yearlyPrice: "$278",
     description: "For teams shipping username-first products",
@@ -67,6 +65,9 @@ export function PricingSection() {
     parseAsStringLiteral(["monthly", "yearly"]).withDefault("monthly"),
   );
 
+  const checkoutProductId =
+    interval === "yearly" ? YEARLY_PRODUCT_ID : MONTHLY_PRODUCT_ID;
+
   return (
     <section className="mx-auto max-w-5xl">
       <div className="relative">
@@ -80,10 +81,10 @@ export function PricingSection() {
 
         <div className="grid grid-cols-1 gap-px bg-border sm:grid-cols-2 lg:grid-cols-3">
           <div className="flex flex-col bg-background px-4 py-6 sm:col-span-2 lg:col-span-1">
-            <p className="mb-4 text-muted-foreground text-xs uppercase tracking-wider">
+            <p className="mb-4 text-xs uppercase tracking-wider text-muted-foreground">
               PRICING
             </p>
-            <h2 className="font-bold text-lg sm:text-xl md:text-2xl leading-tight">
+            <h2 className="text-lg font-bold leading-tight sm:text-xl md:text-2xl">
               Simple pricing for handle search and API
             </h2>
             <div className="mt-6">
@@ -96,6 +97,11 @@ export function PricingSection() {
               key={product.name}
               product={product}
               interval={interval}
+              checkoutUrl={
+                product.isPopular && checkoutProductId
+                  ? `/api/checkout?productId=${checkoutProductId}`
+                  : undefined
+              }
             />
           ))}
         </div>

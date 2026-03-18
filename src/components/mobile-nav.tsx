@@ -4,6 +4,8 @@ import { Portal, PortalBackdrop } from "@/components/ui/portal";
 import { Button } from "@/components/ui/button";
 import { navLinks } from "@/components/header";
 import { XIcon, MenuIcon } from "lucide-react";
+import { Show } from "@clerk/nextjs";
+import Link from "next/link";
 
 export function MobileNav() {
   const [open, setOpen] = React.useState(false);
@@ -48,10 +50,26 @@ export function MobileNav() {
               ))}
             </div>
             <div className="mt-12 flex flex-col gap-2">
-              <Button className="w-full" variant="outline">
-                Sign In
-              </Button>
-              <Button className="w-full">Get Started</Button>
+              <Show
+                when="signed-out"
+                fallback={
+                  <>
+                    <Button asChild className="w-full" variant="outline">
+                      <Link href="/app/profile">Profile</Link>
+                    </Button>
+                    <Button asChild className="w-full">
+                      <Link href="/pricing">Upgrade</Link>
+                    </Button>
+                  </>
+                }
+              >
+                <Button asChild className="w-full" variant="outline">
+                  <Link href="/sign-in">Sign In</Link>
+                </Button>
+                <Button asChild className="w-full">
+                  <Link href="/sign-up">Get Started</Link>
+                </Button>
+              </Show>
             </div>
           </div>
         </Portal>

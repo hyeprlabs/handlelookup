@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { DecorIcon } from "@/components/ui/decor-icon";
 
@@ -96,12 +97,13 @@ function LogoCard({ logo, className, children, ...props }: LogoCardProps) {
       )}
       {...props}
     >
-      <img
-        alt={logo.alt}
-        className="pointer-events-none h-4 select-none md:h-5 dark:brightness-0 dark:invert"
-        height="auto"
+      <Image
         src={logo.src}
-        width="auto"
+        alt={logo.alt}
+        width={160}
+        height={20}
+        unoptimized
+        className="pointer-events-none h-4 w-auto select-none md:h-5 dark:brightness-0 dark:invert"
       />
       {children}
     </div>

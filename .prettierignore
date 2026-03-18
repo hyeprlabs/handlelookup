@@ -2,3 +2,5 @@
 build
 coverage
 pnpm-lock.yaml
+.agents
+.claude
