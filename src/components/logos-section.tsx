@@ -4,7 +4,7 @@ import { LogoCloud } from "@/components/logo-cloud"; // @efferd/logo-cloud-2
 
 export function LogosSection() {
   return (
-    <section className="mb-36">
+    <section className="mb-36 hidden">
       <h2 className="py-6 text-center font-medium text-lg text-muted-foreground tracking-tight md:text-xl">
         Trusted by <span className="text-foreground">experts</span>
       </h2>
