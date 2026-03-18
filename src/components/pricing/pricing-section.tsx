@@ -6,7 +6,8 @@ import { parseAsStringLiteral, useQueryState } from "nuqs";
 import { IntervalTabs } from "@/components/pricing/interval-tabs";
 import { PricingCard, type Product } from "@/components/pricing/pricing-card";
 
-const MONTHLY_PRODUCT_ID = process.env.NEXT_PUBLIC_POLAR_PRODUCT_ID_MONTHLY ?? "";
+const MONTHLY_PRODUCT_ID =
+  process.env.NEXT_PUBLIC_POLAR_PRODUCT_ID_MONTHLY ?? "";
 const YEARLY_PRODUCT_ID = process.env.NEXT_PUBLIC_POLAR_PRODUCT_ID_YEARLY ?? "";
 
 const products: Product[] = [

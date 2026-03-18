@@ -55,6 +55,11 @@ export const POST = Webhooks({
   onOrderPaid: async (payload) => {
     const userId = payload.data.customer.externalId;
     if (!userId) return;
-    console.log("[Polar] order.paid for user", userId, "order", payload.data.id);
+    console.log(
+      "[Polar] order.paid for user",
+      userId,
+      "order",
+      payload.data.id,
+    );
   },
 });

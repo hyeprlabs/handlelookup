@@ -21,8 +21,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://handlelookup.com"),
   title: {
-    default:
-      "Handle Lookup — Check Username Availability Across 65+ Platforms",
+    default: "Handle Lookup — Check Username Availability Across 65+ Platforms",
     template: "%s | Handle Lookup",
   },
   description:
