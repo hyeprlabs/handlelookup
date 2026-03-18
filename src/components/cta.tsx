@@ -23,7 +23,7 @@ export function CallToAction() {
       </div>
       <div className="flex items-center justify-center gap-2 bg-secondary/80 p-4 dark:bg-secondary/40">
         <Button asChild variant="outline">
-          <Link href="/feature/api">Learn More</Link>
+          <Link href="/features/api">Learn More</Link>
         </Button>
         <Button asChild>
           <Link href="/upgrade">
