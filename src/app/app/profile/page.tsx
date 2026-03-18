@@ -2,7 +2,8 @@
 
 import { useState, useRef } from "react";
 import { useUser } from "@clerk/nextjs";
-import type { UserResource } from "@clerk/types";
+
+type UserResource = NonNullable<ReturnType<typeof useUser>["user"]>;
 import { cn } from "@/lib/utils";
 import {
   Card,

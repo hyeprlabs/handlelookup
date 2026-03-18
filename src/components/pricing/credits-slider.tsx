@@ -92,7 +92,7 @@ export function CreditsSlider() {
       </div>
 
       <Button asChild className="w-full">
-        <Link href={`/upgrade?topup=${totalCredits}`}>
+        <Link href="/pricing">
           Buy {totalCredits.toLocaleString()} credits for $
           {totalPrice.toFixed(2)}
         </Link>

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
@@ -15,11 +16,12 @@ export function Footer() {
         <div className="absolute inset-x-0 h-px w-full bg-border" />
         <div className="grid max-w-5xl grid-cols-6 gap-6 p-4">
           <div className="col-span-6 flex flex-col gap-4 pt-5 md:col-span-4">
-            <a className="w-max" href="#">
+            <Link className="w-max" href="/">
               <Logo className="h-5" />
-            </a>
+            </Link>
             <p className="max-w-sm text-balance text-muted-foreground text-sm">
-              Beautify your app with efferd.
+              Check username availability across GitHub, Twitter, Instagram,
+              TikTok, and 60+ more platforms with a single API call.
             </p>
             <div className="flex gap-2">
               {socialLinks.map((item, index) => (
@@ -78,10 +80,6 @@ export function Footer() {
 
 const company = [
   {
-    title: "About Us",
-    href: "/about",
-  },
-  {
     title: "Brand assets",
     href: "https://hyeprlabs.com/brand",
   },
@@ -101,8 +99,16 @@ const company = [
 
 const resources = [
   {
-    title: "Blog",
-    href: "/blog",
+    title: "Features",
+    href: "/features",
+  },
+  {
+    title: "API Docs",
+    href: "/features/api",
+  },
+  {
+    title: "Pricing",
+    href: "/pricing",
   },
   {
     title: "Support",

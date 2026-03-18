@@ -26,7 +26,7 @@ export function CallToAction() {
           <Link href="/features/api">Learn More</Link>
         </Button>
         <Button asChild>
-          <Link href="/upgrade">
+          <Link href="/pricing">
             Get API Access
             <ArrowRight />
           </Link>
