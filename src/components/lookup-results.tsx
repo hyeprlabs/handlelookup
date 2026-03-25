@@ -143,7 +143,7 @@ function LimitBadge({
             </button>
           </>
         ) : (
-          <>Limit reached ·{" "}<Link href="/sign-in" className="underline underline-offset-2">Sign in</Link></>
+          <>Limit reached ·{" "}<Link href="/sign-in?redirect_url=%2F" className="underline underline-offset-2">Sign in</Link></>
         )
       ) : (
         `${remaining}/${limit} today`
@@ -443,7 +443,7 @@ export function LookupResults() {
                 </>
               ) : (
                 <>
-                  <Link href="/sign-in" className="underline underline-offset-2">
+                  <Link href="/sign-in?redirect_url=%2F" className="underline underline-offset-2">
                     Sign in
                   </Link>{" "}
                   for more free lookups, or{" "}
