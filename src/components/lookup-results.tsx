@@ -15,7 +15,6 @@ import { useQueryState, parseAsInteger } from "nuqs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Progress } from "@/components/ui/progress";
 import { Spinner } from "@/components/ui/spinner";
 import {
   Select,
@@ -132,23 +131,24 @@ function LimitBadge({ info }: { info: LimitInfo | null }) {
 function StatsBar({ results, total, done }: { results: PlatformResult[]; total: number; done: boolean }) {
   const available = results.filter((r) => r.status === "available").length;
   const taken = results.filter((r) => r.status === "taken").length;
+  const pct = total > 0 ? Math.round((results.length / total) * 100) : 0;
   return (
     <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
       {!done ? (
         <span className="flex items-center gap-1.5">
           <Spinner className="size-3" />
-          <span className="tabular-nums">{results.length}<span className="opacity-40">/{total}</span></span>
+          <span className="font-mono tabular-nums text-xs">{pct}%</span>
         </span>
       ) : (
-        <span className="tabular-nums">{results.length} checked</span>
+        <span className="tabular-nums text-xs">{results.length} platforms checked</span>
       )}
       {available > 0 && (
-        <span className="font-medium text-emerald-600 dark:text-emerald-400">
+        <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
           {available} available
         </span>
       )}
       {taken > 0 && (
-        <span className="font-medium text-red-600 dark:text-red-400">
+        <span className="text-xs font-medium text-red-600 dark:text-red-400">
           {taken} taken
         </span>
       )}
@@ -169,8 +169,8 @@ function ResultCard({ result, index }: { result: PlatformResult; index: number }
         ease: EASE,
       }}
     >
-      <Card className="group gap-0 p-0 transition-shadow duration-200 hover:shadow-sm">
-        <CardHeader className="flex items-center justify-between px-4 py-3">
+      <Card className="group gap-0 p-0 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+        <CardHeader className="flex items-center justify-between px-4 py-2.5">
           <CardTitle className="text-sm font-medium">{result.platform}</CardTitle>
           <CardAction>
             <Badge variant="outline" className={cn("gap-1 text-[11px]", cfg.badge)}>
@@ -180,18 +180,18 @@ function ResultCard({ result, index }: { result: PlatformResult; index: number }
           </CardAction>
         </CardHeader>
         <CardContent className="border-y px-4 py-2.5">
-          <p className="truncate font-mono text-[11px] text-muted-foreground">{result.url}</p>
+          <p className="truncate text-xs text-muted-foreground">{result.url}</p>
         </CardContent>
-        <CardFooter className="border-none px-4 py-3">
+        <CardFooter className="border-none px-4 py-2.5">
           <Button
-            variant="ghost"
+            variant="outline"
             size="sm"
-            className="h-7 w-full text-xs text-muted-foreground transition-colors duration-150 hover:text-foreground"
+            className="w-full transition-colors duration-150 group-hover:border-foreground/20"
             asChild
           >
             <Link href={result.url} target="_blank" rel="noopener noreferrer">
-              View profile
-              <ExternalLink className="ml-auto size-3 opacity-50 transition-opacity group-hover:opacity-80" />
+              View on {result.platform}
+              <ExternalLink className="size-3 opacity-60 transition-opacity group-hover:opacity-100" />
             </Link>
           </Button>
         </CardFooter>
@@ -207,15 +207,15 @@ function SkeletonCard({ index }: { index: number }) {
       style={{ animationDelay: `${index * 12}ms` }}
     >
       <Card className="gap-0 p-0">
-        <CardHeader className="flex items-center justify-between px-4 py-3">
-          <div className="h-3.5 w-20 animate-pulse rounded-sm bg-muted" />
-          <div className="h-5 w-16 animate-pulse rounded-full bg-muted" />
+        <CardHeader className="flex items-center justify-between px-4 py-2.5">
+          <div className="h-4 w-24 animate-pulse rounded bg-muted" />
+          <div className="h-5 w-14 animate-pulse rounded-full bg-muted" />
         </CardHeader>
         <CardContent className="border-y px-4 py-2.5">
-          <div className="h-3 w-32 animate-pulse rounded-sm bg-muted" />
+          <div className="h-3 w-36 animate-pulse rounded bg-muted" />
         </CardContent>
-        <CardFooter className="border-none px-4 py-3">
-          <div className="h-7 w-full animate-pulse rounded bg-muted" />
+        <CardFooter className="border-none px-4 py-2.5">
+          <div className="h-8 w-full animate-pulse rounded bg-muted" />
         </CardFooter>
       </Card>
     </div>
@@ -228,7 +228,7 @@ function IdleState() {
       key="idle"
       {...fadeUp}
       transition={{ duration: 0.22, delay: 0.15, ease: EASE }}
-      className="flex flex-col items-center justify-center py-20 text-center"
+      className="flex flex-col items-center justify-center px-4 py-20 text-center md:px-8"
     >
       <p className="font-mono text-sm text-muted-foreground/60">
         ↑ enter a handle to check availability
@@ -385,7 +385,7 @@ export function LookupResults() {
         <motion.div
           key="rate-limited"
           {...fadeUp}
-          className="flex flex-col items-center justify-center py-20 text-center"
+          className="flex flex-col items-center justify-center px-4 py-20 text-center md:px-8"
         >
           <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full border bg-muted/40">
             <XCircle className="size-4 text-muted-foreground" />
@@ -406,7 +406,7 @@ export function LookupResults() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -4 }}
           transition={{ duration: 0.2, ease: EASE }}
-          className="w-full py-6"
+          className="w-full px-4 py-6 md:px-8"
         >
           {/* Handle + stats */}
           <motion.div
@@ -420,11 +420,6 @@ export function LookupResults() {
             </h2>
             <StatsBar results={results} total={totalPlatforms} done={done} />
           </motion.div>
-
-          {/* Progress bar */}
-          <div className={cn("mb-5 transition-opacity duration-700", done ? "opacity-0" : "opacity-100")}>
-            <Progress value={(results.length / totalPlatforms) * 100} className="h-px" />
-          </div>
 
           {/* Filter toolbar */}
           <motion.div
@@ -477,8 +472,8 @@ export function LookupResults() {
 
             {/* Category pills */}
             <div
-              className="-mx-4 flex gap-1.5 overflow-x-auto px-4 pb-0.5"
-              style={{ scrollbarWidth: "none" }}
+              className="flex gap-1.5 overflow-x-auto pb-0.5"
+              style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
             >
               {CATEGORIES.map((cat) => {
                 const count = catCounts[cat.id] ?? 0;
