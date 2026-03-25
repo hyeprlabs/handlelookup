@@ -8,14 +8,6 @@ export const dynamic = "force-dynamic";
 
 const HANDLE_REGEX = /^[a-zA-Z0-9_.-]{1,50}$/;
 
-function getClientIp(req: NextRequest): string {
-  return (
-    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-    req.headers.get("x-real-ip") ??
-    "127.0.0.1"
-  );
-}
-
 export async function GET(request: NextRequest) {
   const handle = request.nextUrl.searchParams.get("handle")?.trim();
 
@@ -23,18 +15,28 @@ export async function GET(request: NextRequest) {
     return Response.json({ error: "Invalid handle" }, { status: 400 });
   }
 
-  const { userId } = await auth();
+  const { userId, has } = await auth();
 
+  // Require authentication
   if (!userId) {
-    const ip = getClientIp(request);
-    const { allowed } = getRateLimitInfo(ip);
+    return Response.json(
+      { error: "Authentication required", code: "UNAUTHENTICATED" },
+      { status: 401 }
+    );
+  }
+
+  // Pro subscribers get unlimited lookups
+  const isPro = has({ plan: "user:pro" });
+
+  if (!isPro) {
+    const { allowed } = getRateLimitInfo(userId);
     if (!allowed) {
       return Response.json(
         { error: "Daily limit reached", code: "RATE_LIMITED" },
         { status: 429 }
       );
     }
-    incrementUsage(ip);
+    incrementUsage(userId);
   }
 
   const encoder = new TextEncoder();
