@@ -1,9 +1,8 @@
 import { cn } from "@/lib/utils";
 import { DecorIcon } from "@/components/ui/decor-icon";
 import { FullWidthDivider } from "@/components/ui/full-width-divider";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { PlatformsGrid } from "@/components/platforms-grid";
+import { LookupForm } from "@/components/lookup-form";
 
 export function HeroSection() {
   return (
@@ -45,15 +44,7 @@ export function HeroSection() {
           so you can claim the right handle faster.
         </p>
 
-        <form className="fade-in slide-in-from-bottom-10 flex w-fit animate-in items-center justify-center gap-2 fill-mode-backwards pt-2 delay-300 duration-500 ease-out">
-          <Input
-            aria-label="handle"
-            className="h-9"
-            placeholder="Try a handle (e.g. alex)"
-            type="text"
-          />
-          <Button>Check Availability</Button>
-        </form>
+        <LookupForm />
       </div>
       <div className="relative">
         <DecorIcon className="size-4" position="top-left" />
