@@ -9,6 +9,7 @@ export type Category =
   | "creative"
   | "music"
   | "writing"
+  | "business"
   | "other";
 
 export interface Platform {
@@ -29,6 +30,19 @@ export interface Platform {
 
 // ── Category Rules ──────────────────────────────────────────────────────────
 
+// Business-first: platforms every new business founder should claim
+const BUSINESS = new Set([
+  "LinkedIn",
+  "ProductHunt",
+  "Patreon",
+  "Gumroad",
+  "kofi",
+  "BuyMeACoffee",
+  "Freelancer",
+  "Trello",
+  "Wix",
+]);
+
 const FEATURED = new Set([
   "GitHub",
   "Instagram",
@@ -36,7 +50,6 @@ const FEATURED = new Set([
   "TikTok",
   "YouTube",
   "Reddit",
-  "LinkedIn",
   "Snapchat",
   "Pinterest",
   "Twitch",
@@ -48,7 +61,6 @@ const FEATURED = new Set([
   "Spotify",
   "Behance",
   "Dribbble",
-  "Patreon",
   "DeviantArt",
   "HackerNews",
   "last.fm",
@@ -57,7 +69,6 @@ const FEATURED = new Set([
   "Bluesky",
   "Codepen",
   "Linktree",
-  "ProductHunt",
   "npm",
 ]);
 
@@ -98,6 +109,7 @@ const WRITING_KEYS = [
 ];
 
 function getCategory(name: string, urlMain: string): Category {
+  if (BUSINESS.has(name)) return "business";
   if (FEATURED.has(name)) return "featured";
   const lower = (name + " " + urlMain)
     .toLowerCase()
@@ -156,50 +168,21 @@ export const PLATFORMS: Platform[] = Object.entries(rawData)
     return a.name.localeCompare(b.name);
   });
 
+const countOf = (cat: Category | "all") =>
+  cat === "all" ? PLATFORMS.length : PLATFORMS.filter((p) => p.category === cat).length;
+
 export const CATEGORIES: {
   id: Category | "all";
   label: string;
-  description: string;
 }[] = [
-  { id: "all", label: "All", description: `${PLATFORMS.length} platforms` },
-  {
-    id: "featured",
-    label: "Featured",
-    description: `${PLATFORMS.filter((p) => p.category === "featured").length} platforms`,
-  },
-  {
-    id: "social",
-    label: "Social",
-    description: `${PLATFORMS.filter((p) => p.category === "social").length} platforms`,
-  },
-  {
-    id: "developer",
-    label: "Developer",
-    description: `${PLATFORMS.filter((p) => p.category === "developer").length} platforms`,
-  },
-  {
-    id: "gaming",
-    label: "Gaming",
-    description: `${PLATFORMS.filter((p) => p.category === "gaming").length} platforms`,
-  },
-  {
-    id: "creative",
-    label: "Creative",
-    description: `${PLATFORMS.filter((p) => p.category === "creative").length} platforms`,
-  },
-  {
-    id: "music",
-    label: "Music",
-    description: `${PLATFORMS.filter((p) => p.category === "music").length} platforms`,
-  },
-  {
-    id: "writing",
-    label: "Writing",
-    description: `${PLATFORMS.filter((p) => p.category === "writing").length} platforms`,
-  },
-  {
-    id: "other",
-    label: "Other",
-    description: `${PLATFORMS.filter((p) => p.category === "other").length} platforms`,
-  },
+  { id: "all", label: `All (${countOf("all")})` },
+  { id: "featured", label: `Featured (${countOf("featured")})` },
+  { id: "business", label: `Business (${countOf("business")})` },
+  { id: "social", label: `Social (${countOf("social")})` },
+  { id: "developer", label: `Developer (${countOf("developer")})` },
+  { id: "gaming", label: `Gaming (${countOf("gaming")})` },
+  { id: "creative", label: `Creative (${countOf("creative")})` },
+  { id: "music", label: `Music (${countOf("music")})` },
+  { id: "writing", label: `Writing (${countOf("writing")})` },
+  { id: "other", label: `Other (${countOf("other")})` },
 ];
