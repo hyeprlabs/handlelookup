@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Clock, Zap } from "lucide-react";
+import { Zap } from "lucide-react";
 import { PricingTable } from "@clerk/nextjs";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
@@ -19,72 +18,38 @@ import {
   DrawerTitle,
   DrawerDescription,
 } from "@/components/ui/drawer";
-import { DAILY_LIMIT } from "@/lib/constants";
-
-function getResetString(): string {
-  const now = new Date();
-  const tomorrow = new Date(
-    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1),
-  );
-  const diff = tomorrow.getTime() - now.getTime();
-  const h = Math.floor(diff / 3_600_000);
-  const m = Math.floor((diff % 3_600_000) / 60_000);
-  return h > 0 ? `${h}h ${m}m` : `${m}m`;
-}
 
 interface UpgradeDrawerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  limitReached?: boolean;
 }
 
-export function UpgradeDrawer({
-  open,
-  onOpenChange,
-  limitReached = false,
-}: UpgradeDrawerProps) {
+export function UpgradeDrawer({ open, onOpenChange }: UpgradeDrawerProps) {
   const isMobile = useIsMobile();
-  const [resetIn, setResetIn] = useState(getResetString);
-
-  useEffect(() => {
-    if (!open) return;
-    const id = setInterval(() => setResetIn(getResetString()), 30_000);
-    return () => clearInterval(id);
-  }, [open]);
-
-  const title = limitReached ? "Daily limit reached" : "Upgrade to Pro";
-  const subtitle = limitReached
-    ? `${DAILY_LIMIT}/${DAILY_LIMIT} free lookups used · resets in ${resetIn}`
-    : "Unlimited lookups across all platforms";
 
   // Close our overlay the moment the user clicks Clerk's subscribe button,
-  // so Clerk's checkout sheet isn't obscured by our drawer/dialog.
-  const handlePricingAreaClick = (e: React.MouseEvent) => {
+  // so Clerk's checkout sheet isn't obscured.
+  const handlePricingClick = (e: React.MouseEvent) => {
     if ((e.target as HTMLElement).closest("button")) {
       onOpenChange(false);
     }
   };
 
-  const headerContent = (
+  const header = (
     <div className="flex items-center gap-3">
       <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border bg-muted/50">
-        {limitReached ? (
-          <Clock className="size-4 text-amber-500" />
-        ) : (
-          <Zap className="size-4 text-muted-foreground" />
-        )}
+        <Zap className="size-4 text-muted-foreground" />
       </div>
       <div>
-        <p className="text-sm font-semibold leading-snug">{title}</p>
-        <p className="text-xs text-muted-foreground">{subtitle}</p>
+        <p className="text-sm font-semibold leading-snug">Upgrade to Pro</p>
+        <p className="text-xs text-muted-foreground">Unlimited lookups across all platforms</p>
       </div>
     </div>
   );
 
-  const bodyContent = (
+  const body = (
     <div className="flex flex-col gap-5">
-      {/* PricingTable — click listener closes our overlay before Clerk opens checkout */}
-      <div onClick={handlePricingAreaClick}>
+      <div onClick={handlePricingClick}>
         <PricingTable />
       </div>
       <p className="text-center text-xs text-muted-foreground">
@@ -106,11 +71,13 @@ export function UpgradeDrawer({
         <DrawerContent className="max-h-[92svh]">
           <DrawerHeader className="pb-4 text-left">
             <DrawerTitle asChild>
-              <div>{headerContent}</div>
+              <div>{header}</div>
             </DrawerTitle>
-            <DrawerDescription className="sr-only">{subtitle}</DrawerDescription>
+            <DrawerDescription className="sr-only">
+              Upgrade to Pro for unlimited lookups
+            </DrawerDescription>
           </DrawerHeader>
-          <div className="overflow-y-auto px-4 pb-8">{bodyContent}</div>
+          <div className="overflow-y-auto px-4 pb-8">{body}</div>
         </DrawerContent>
       </Drawer>
     );
@@ -121,11 +88,13 @@ export function UpgradeDrawer({
       <DialogContent className="flex max-h-[90svh] flex-col gap-0 overflow-hidden p-0 sm:max-w-lg">
         <DialogHeader className="border-b px-6 py-5">
           <DialogTitle asChild>
-            <div>{headerContent}</div>
+            <div>{header}</div>
           </DialogTitle>
-          <DialogDescription className="sr-only">{subtitle}</DialogDescription>
+          <DialogDescription className="sr-only">
+            Upgrade to Pro for unlimited lookups
+          </DialogDescription>
         </DialogHeader>
-        <div className="flex-1 overflow-y-auto px-6 py-6">{bodyContent}</div>
+        <div className="flex-1 overflow-y-auto px-6 py-6">{body}</div>
       </DialogContent>
     </Dialog>
   );

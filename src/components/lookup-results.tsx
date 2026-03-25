@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   ExternalLink,
   CheckCircle2,
@@ -47,7 +48,6 @@ import { CATEGORIES, PLATFORMS, type Category } from "@/lib/platforms";
 import type { PlatformResult } from "@/lib/lookup";
 import { DAILY_LIMIT } from "@/lib/constants";
 import { useUpgradeDrawer } from "@/components/providers";
-import { AuthGate } from "@/components/auth-gate";
 
 // ── Constants ─────────────────────────────────────────────────────────────
 
@@ -117,29 +117,17 @@ function LimitBadge({
     return (
       <button
         onClick={onUpgrade}
-        className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-xs font-medium text-amber-600 transition-colors hover:bg-amber-500/20 dark:text-amber-400"
+        className="inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium text-muted-foreground transition-colors hover:border-foreground/20 hover:text-foreground"
       >
         <Zap className="size-3" />
-        Limit reached · Upgrade
+        0/{limit} · Upgrade
       </button>
     );
   }
 
   return (
-    <span
-      className={cn(
-        "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium",
-        isLow
-          ? "border-amber-500/25 bg-amber-500/5 text-amber-600 dark:text-amber-400"
-          : "border-border bg-muted/50 text-muted-foreground"
-      )}
-    >
-      <span
-        className={cn(
-          "size-1.5 rounded-full",
-          isLow ? "bg-amber-500" : "bg-emerald-500"
-        )}
-      />
+    <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border bg-muted/50 px-2.5 py-1 text-xs font-medium text-muted-foreground">
+      <span className="size-1.5 rounded-full bg-muted-foreground/40" />
       {remaining}/{limit} today
     </span>
   );
@@ -325,6 +313,7 @@ function EmptyState({ onClear }: { onClear: () => void }) {
 export function LookupResults() {
   const { isSignedIn, isLoaded } = useAuth();
   const { openUpgrade } = useUpgradeDrawer();
+  const router = useRouter();
 
   const [q] = useQueryState("q", { defaultValue: "" });
   const [category, setCategory] = useQueryState("category", {
@@ -363,6 +352,15 @@ export function LookupResults() {
     if (isLoaded) fetchLimitInfo();
   }, [isLoaded, isSignedIn, fetchLimitInfo]);
 
+  // Unauthenticated users with a query → redirect to sign-up, return to same URL
+  useEffect(() => {
+    if (isLoaded && !isSignedIn && q) {
+      router.push(
+        `/sign-up?redirect_url=${encodeURIComponent(`/?q=${encodeURIComponent(q)}`)}`
+      );
+    }
+  }, [isLoaded, isSignedIn, q, router]);
+
   const startLookup = useCallback(
     async (handle: string) => {
       abortRef.current?.abort();
@@ -382,7 +380,6 @@ export function LookupResults() {
           setRateLimited(true);
           setDone(true);
           fetchLimitInfo();
-          openUpgrade({ handle, limitReached: true });
           return;
         }
         if (response.status === 401) {
@@ -428,7 +425,7 @@ export function LookupResults() {
         }
       }
     },
-    [fetchLimitInfo, openUpgrade]
+    [fetchLimitInfo]
   );
 
   useEffect(() => {
@@ -439,7 +436,7 @@ export function LookupResults() {
       setRateLimited(false);
       return;
     }
-    if (isLoaded && !isSignedIn) return; // AuthGate handles this
+    if (isLoaded && !isSignedIn) return; // redirect effect handles this
 
     setPage(1);
     startLookup(q);
@@ -512,10 +509,20 @@ export function LookupResults() {
       {/* No query — idle prompt */}
       {!authLoading && !q && <IdleState />}
 
-      {/* Not signed in — auth gate */}
-      {showAuthGate && <AuthGate key="auth-gate" handle={q} />}
+      {/* Not signed in with query — redirect in progress, show skeleton */}
+      {showAuthGate && (
+        <motion.div
+          key="auth-redirecting"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.15 }}
+        >
+          <AuthLoadingState />
+        </motion.div>
+      )}
 
-      {/* Rate limited — background state (drawer opened automatically) */}
+      {/* Rate limited — clean empty state, no colors */}
       {showRateLimited && (
         <motion.div
           key="rate-limited"
@@ -525,20 +532,20 @@ export function LookupResults() {
           transition={{ duration: 0.2, ease: EASE }}
           className="flex flex-col items-center justify-center px-4 py-20 text-center md:px-8"
         >
-          <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full border border-amber-500/25 bg-amber-500/10">
-            <Zap className="size-4 text-amber-500" />
+          <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full border bg-muted/40">
+            <Zap className="size-4 text-muted-foreground" />
           </div>
           <p className="text-sm font-medium">Daily limit reached</p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            You&apos;ve used all {DAILY_LIMIT} free lookups today.
+          <p className="mt-1.5 text-xs text-muted-foreground">
+            You&apos;ve used all {DAILY_LIMIT} free lookups for today.
           </p>
           <Button
+            variant="outline"
             size="sm"
             className="mt-5"
-            onClick={() => openUpgrade({ limitReached: true })}
+            onClick={openUpgrade}
           >
-            <Zap className="size-3.5" />
-            Upgrade to Pro
+            Upgrade plan
           </Button>
         </motion.div>
       )}
@@ -612,7 +619,7 @@ export function LookupResults() {
                 </Select>
                 <LimitBadge
                   info={limitInfo}
-                  onUpgrade={() => openUpgrade({ limitReached: true })}
+                  onUpgrade={openUpgrade}
                 />
               </div>
             </div>
