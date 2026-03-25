@@ -1,7 +1,7 @@
 import { type NextRequest } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { checkAllPlatforms } from "@/lib/lookup";
-import { getRateLimitInfo, incrementUsage } from "@/lib/rate-limit";
+import { checkAndIncrementUsage } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
 
   const { userId, has } = await auth();
 
-  // Require authentication
+  // Authentication required for all lookups
   if (!userId) {
     return Response.json(
       { error: "Authentication required", code: "UNAUTHENTICATED" },
@@ -25,18 +25,17 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  // Pro subscribers get unlimited lookups
+  // Pro subscribers bypass rate limiting entirely
   const isPro = has({ plan: "user:pro" });
 
   if (!isPro) {
-    const { allowed } = getRateLimitInfo(userId);
+    const { allowed } = await checkAndIncrementUsage(userId);
     if (!allowed) {
       return Response.json(
         { error: "Daily limit reached", code: "RATE_LIMITED" },
         { status: 429 }
       );
     }
-    incrementUsage(userId);
   }
 
   const encoder = new TextEncoder();

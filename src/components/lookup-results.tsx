@@ -45,11 +45,11 @@ import {
 import { cn } from "@/lib/utils";
 import { CATEGORIES, PLATFORMS, type Category } from "@/lib/platforms";
 import type { PlatformResult } from "@/lib/lookup";
-import { DAILY_LIMIT } from "@/lib/rate-limit";
+import { DAILY_LIMIT } from "@/lib/constants";
+import { useUpgradeDrawer } from "@/components/providers";
 import { AuthGate } from "@/components/auth-gate";
-import { UpgradeDialog } from "@/components/upgrade-dialog";
 
-// ── Constants ────────────────────────────────────────────────────────────
+// ── Constants ─────────────────────────────────────────────────────────────
 
 const PAGE_SIZE = 12;
 const EASE = [0.4, 0, 0.2, 1] as const;
@@ -72,7 +72,7 @@ const STATUS_CFG = {
   },
 } as const;
 
-// ── Types ────────────────────────────────────────────────────────────────
+// ── Types ─────────────────────────────────────────────────────────────────
 
 interface LimitInfo {
   authenticated: boolean;
@@ -83,7 +83,7 @@ interface LimitInfo {
   allowed?: boolean;
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────
+// ── Helpers ────────────────────────────────────────────────────────────────
 
 function getPageNumbers(current: number, total: number): (number | "ellipsis")[] {
   if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
@@ -128,9 +128,9 @@ function LimitBadge({
   return (
     <span
       className={cn(
-        "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors",
+        "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium",
         isLow
-          ? "border-amber-500/25 bg-amber-500/8 text-amber-600 dark:text-amber-400"
+          ? "border-amber-500/25 bg-amber-500/5 text-amber-600 dark:text-amber-400"
           : "border-border bg-muted/50 text-muted-foreground"
       )}
     >
@@ -157,8 +157,9 @@ function StatsBar({
   const available = results.filter((r) => r.status === "available").length;
   const taken = results.filter((r) => r.status === "taken").length;
   const pct = total > 0 ? Math.round((results.length / total) * 100) : 0;
+
   return (
-    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-muted-foreground">
       {!done ? (
         <span className="flex items-center gap-1.5">
           <Spinner className="size-3" />
@@ -243,6 +244,39 @@ function SkeletonCard({ index }: { index: number }) {
   );
 }
 
+/** Renders while Clerk auth state is loading and a query is in the URL.
+ *  Matches the dimensions of the real results view to prevent layout shift. */
+function AuthLoadingState() {
+  return (
+    <div className="w-full animate-in fade-in px-4 py-6 duration-200 md:px-8">
+      {/* Handle title */}
+      <div className="mb-3 h-7 w-28 animate-pulse rounded bg-muted" />
+      {/* Toolbar */}
+      <div className="mb-6 space-y-3">
+        <div className="flex gap-2">
+          <div className="h-9 flex-1 animate-pulse rounded-md bg-muted" />
+          <div className="h-9 w-36 animate-pulse rounded-md bg-muted" />
+        </div>
+        <div className="flex gap-1.5 overflow-hidden">
+          {Array.from({ length: 8 }, (_, i) => (
+            <div
+              key={i}
+              className="h-7 w-16 shrink-0 animate-pulse rounded-full bg-muted"
+              style={{ animationDelay: `${i * 40}ms` }}
+            />
+          ))}
+        </div>
+      </div>
+      {/* Card grid */}
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {Array.from({ length: 6 }, (_, i) => (
+          <SkeletonCard key={i} index={i} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function IdleState() {
   return (
     <motion.div
@@ -290,6 +324,7 @@ function EmptyState({ onClear }: { onClear: () => void }) {
 
 export function LookupResults() {
   const { isSignedIn, isLoaded } = useAuth();
+  const { openUpgrade } = useUpgradeDrawer();
 
   const [q] = useQueryState("q", { defaultValue: "" });
   const [category, setCategory] = useQueryState("category", {
@@ -310,7 +345,6 @@ export function LookupResults() {
   const [results, setResults] = useState<PlatformResult[]>([]);
   const [done, setDone] = useState(false);
   const [rateLimited, setRateLimited] = useState(false);
-  const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [limitInfo, setLimitInfo] = useState<LimitInfo | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
@@ -325,7 +359,6 @@ export function LookupResults() {
     fetchLimitInfo();
   }, [fetchLimitInfo]);
 
-  // Re-fetch limit info when auth state changes
   useEffect(() => {
     if (isLoaded) fetchLimitInfo();
   }, [isLoaded, isSignedIn, fetchLimitInfo]);
@@ -348,12 +381,11 @@ export function LookupResults() {
         if (response.status === 429) {
           setRateLimited(true);
           setDone(true);
-          setUpgradeOpen(true); // auto-open upgrade dialog
           fetchLimitInfo();
+          openUpgrade({ handle, limitReached: true });
           return;
         }
         if (response.status === 401) {
-          // Should not happen (client-side gate prevents this), but handle gracefully
           setDone(true);
           return;
         }
@@ -396,7 +428,7 @@ export function LookupResults() {
         }
       }
     },
-    [fetchLimitInfo]
+    [fetchLimitInfo, openUpgrade]
   );
 
   useEffect(() => {
@@ -407,8 +439,7 @@ export function LookupResults() {
       setRateLimited(false);
       return;
     }
-    // Don't fire lookup if not signed in — AuthGate handles it
-    if (isLoaded && !isSignedIn) return;
+    if (isLoaded && !isSignedIn) return; // AuthGate handles this
 
     setPage(1);
     startLookup(q);
@@ -457,241 +488,249 @@ export function LookupResults() {
   const activeCat = (category ?? "featured") as Category | "all";
   const activeStatus = status ?? "all";
 
-  // Derive current view state
+  // Derived state flags
+  const authLoading = !isLoaded && !!q;
   const showAuthGate = isLoaded && !isSignedIn && !!q;
-  const showResults = isLoaded && !!isSignedIn && !!q && !rateLimited;
   const showRateLimited = isLoaded && !!isSignedIn && !!q && rateLimited;
+  const showResults = isLoaded && !!isSignedIn && !!q && !rateLimited;
 
   return (
-    <>
-      <UpgradeDialog
-        open={upgradeOpen}
-        onOpenChange={setUpgradeOpen}
-        handle={q || undefined}
-      />
+    <AnimatePresence mode="wait">
+      {/* No query — idle prompt */}
+      {!q && <IdleState />}
 
-      <AnimatePresence mode="wait">
-        {/* Idle */}
-        {!q && <IdleState />}
+      {/* Auth loading with query in URL — skeleton prevents layout shift */}
+      {authLoading && (
+        <motion.div
+          key="auth-loading"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.15 }}
+        >
+          <AuthLoadingState />
+        </motion.div>
+      )}
 
-        {/* Auth gate — not signed in */}
-        {showAuthGate && <AuthGate key="auth-gate" handle={q} />}
+      {/* Not signed in — auth gate */}
+      {showAuthGate && <AuthGate key="auth-gate" handle={q} />}
 
-        {/* Rate limited — auto-opened dialog + subtle background state */}
-        {showRateLimited && (
-          <motion.div
-            key="rate-limited"
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
-            transition={{ duration: 0.2, ease: EASE }}
-            className="flex flex-col items-center justify-center px-4 py-20 text-center md:px-8"
+      {/* Rate limited — background state (drawer opened automatically) */}
+      {showRateLimited && (
+        <motion.div
+          key="rate-limited"
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -4 }}
+          transition={{ duration: 0.2, ease: EASE }}
+          className="flex flex-col items-center justify-center px-4 py-20 text-center md:px-8"
+        >
+          <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full border border-amber-500/25 bg-amber-500/10">
+            <Zap className="size-4 text-amber-500" />
+          </div>
+          <p className="text-sm font-medium">Daily limit reached</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            You&apos;ve used all {DAILY_LIMIT} free lookups today.
+          </p>
+          <Button
+            size="sm"
+            className="mt-5"
+            onClick={() => openUpgrade({ limitReached: true })}
           >
-            <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full border border-amber-500/25 bg-amber-500/10">
-              <Zap className="size-4 text-amber-500" />
-            </div>
-            <p className="text-sm font-medium">Daily limit reached</p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              You&apos;ve used all {DAILY_LIMIT} free lookups today.
-            </p>
-            <Button
-              size="sm"
-              className="mt-4"
-              onClick={() => setUpgradeOpen(true)}
-            >
-              <Zap className="size-3.5" />
-              Upgrade to Pro
-            </Button>
+            <Zap className="size-3.5" />
+            Upgrade to Pro
+          </Button>
+        </motion.div>
+      )}
+
+      {/* Results */}
+      {showResults && (
+        <motion.div
+          key={q}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -4 }}
+          transition={{ duration: 0.2, ease: EASE }}
+          className="w-full px-4 py-6 md:px-8"
+        >
+          {/* Handle + stats row */}
+          <motion.div
+            className="mb-3 flex flex-wrap items-baseline justify-between gap-2"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.15, delay: 0.06 }}
+          >
+            <h2 className="text-lg font-semibold tracking-tight">
+              <span className="font-mono">@{q}</span>
+            </h2>
+            <StatsBar results={results} total={totalPlatforms} done={done} />
           </motion.div>
-        )}
 
-        {/* Results */}
-        {showResults && (
+          {/* Filter toolbar */}
           <motion.div
-            key={q}
-            initial={{ opacity: 0, y: 8 }}
+            className="mb-6 space-y-3"
+            initial={{ opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
-            transition={{ duration: 0.2, ease: EASE }}
-            className="w-full px-4 py-6 md:px-8"
+            transition={{ duration: 0.18, delay: 0.1 }}
           >
-            {/* Handle + stats */}
-            <motion.div
-              className="mb-3 flex flex-wrap items-baseline justify-between gap-2"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.15, delay: 0.06 }}
-            >
-              <h2 className="text-lg font-semibold tracking-tight">
-                <span className="font-mono">@{q}</span>
-              </h2>
-              <StatsBar results={results} total={totalPlatforms} done={done} />
-            </motion.div>
-
-            {/* Filter toolbar */}
-            <motion.div
-              className="mb-6 space-y-3"
-              initial={{ opacity: 0, y: 4 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.18, delay: 0.1 }}
-            >
-              {/* Search + status + limit badge */}
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                <div className="relative min-w-0 flex-1">
-                  <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    placeholder="Search platforms…"
-                    className="h-9 pl-8 text-sm"
-                    value={search ?? ""}
-                    onChange={(e) => handleSearch(e.target.value)}
-                  />
-                </div>
-                <div className="flex items-center gap-2">
-                  <Select value={activeStatus} onValueChange={handleStatus}>
-                    <SelectTrigger className="h-9 w-full text-sm sm:w-36">
-                      <SelectValue placeholder="Status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All results</SelectItem>
-                      <SelectItem value="available">
-                        <span className="flex items-center gap-1.5">
-                          <span className="size-1.5 rounded-full bg-emerald-500" />
-                          Available
-                        </span>
-                      </SelectItem>
-                      <SelectItem value="taken">
-                        <span className="flex items-center gap-1.5">
-                          <span className="size-1.5 rounded-full bg-red-500" />
-                          Taken
-                        </span>
-                      </SelectItem>
-                      <SelectItem value="unknown">
-                        <span className="flex items-center gap-1.5">
-                          <span className="size-1.5 rounded-full bg-muted-foreground/40" />
-                          Unknown
-                        </span>
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <LimitBadge info={limitInfo} onUpgrade={() => setUpgradeOpen(true)} />
-                </div>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <div className="relative min-w-0 flex-1">
+                <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  placeholder="Search platforms…"
+                  className="h-9 pl-8 text-sm"
+                  value={search ?? ""}
+                  onChange={(e) => handleSearch(e.target.value)}
+                />
               </div>
+              <div className="flex items-center gap-2">
+                <Select value={activeStatus} onValueChange={handleStatus}>
+                  <SelectTrigger className="h-9 w-full text-sm sm:w-36">
+                    <SelectValue placeholder="Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All results</SelectItem>
+                    <SelectItem value="available">
+                      <span className="flex items-center gap-1.5">
+                        <span className="size-1.5 rounded-full bg-emerald-500" />
+                        Available
+                      </span>
+                    </SelectItem>
+                    <SelectItem value="taken">
+                      <span className="flex items-center gap-1.5">
+                        <span className="size-1.5 rounded-full bg-red-500" />
+                        Taken
+                      </span>
+                    </SelectItem>
+                    <SelectItem value="unknown">
+                      <span className="flex items-center gap-1.5">
+                        <span className="size-1.5 rounded-full bg-muted-foreground/40" />
+                        Unknown
+                      </span>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+                <LimitBadge
+                  info={limitInfo}
+                  onUpgrade={() => openUpgrade({ limitReached: true })}
+                />
+              </div>
+            </div>
 
-              {/* Category pills */}
-              <div
-                className="flex gap-1.5 overflow-x-auto pb-0.5"
-                style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+            {/* Category pills */}
+            <div
+              className="flex gap-1.5 overflow-x-auto pb-0.5"
+              style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+            >
+              {CATEGORIES.map((cat) => {
+                const count = catCounts[cat.id] ?? 0;
+                const isActive = activeCat === cat.id;
+                return (
+                  <button
+                    key={cat.id}
+                    onClick={() => handleCategory(cat.id)}
+                    className={cn(
+                      "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium",
+                      "transition-all duration-150 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                      isActive
+                        ? "border-foreground/20 bg-foreground text-background"
+                        : "border-border bg-background text-muted-foreground hover:border-foreground/15 hover:text-foreground"
+                    )}
+                  >
+                    {cat.label}
+                    {count > 0 && (
+                      <Badge
+                        variant="secondary"
+                        className={cn(
+                          "h-4 min-w-4 rounded-full px-1 text-[10px] font-semibold tabular-nums",
+                          isActive
+                            ? "bg-background/20 text-background"
+                            : "bg-muted text-muted-foreground"
+                        )}
+                      >
+                        {count}
+                      </Badge>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </motion.div>
+
+          {/* Results grid */}
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {paginated.map((result, i) => (
+              <ResultCard key={result.platform} result={result} index={i} />
+            ))}
+            {Array.from({ length: skeletonCount }, (_, i) => (
+              <SkeletonCard key={`sk-${i}`} index={paginated.length + i} />
+            ))}
+          </div>
+
+          {/* Empty state */}
+          <AnimatePresence>
+            {done && filtered.length === 0 && (
+              <EmptyState onClear={clearFilters} />
+            )}
+          </AnimatePresence>
+
+          {/* Pagination */}
+          <AnimatePresence>
+            {totalPages > 1 && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.15 }}
+                className="mt-8"
               >
-                {CATEGORIES.map((cat) => {
-                  const count = catCounts[cat.id] ?? 0;
-                  const isActive = activeCat === cat.id;
-                  return (
-                    <button
-                      key={cat.id}
-                      onClick={() => handleCategory(cat.id)}
-                      className={cn(
-                        "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium",
-                        "transition-all duration-150 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                        isActive
-                          ? "border-foreground/20 bg-foreground text-background"
-                          : "border-border bg-background text-muted-foreground hover:border-foreground/15 hover:text-foreground"
-                      )}
-                    >
-                      {cat.label}
-                      {count > 0 && (
-                        <Badge
-                          variant="secondary"
-                          className={cn(
-                            "h-4 min-w-4 rounded-full px-1 text-[10px] font-semibold tabular-nums",
-                            isActive
-                              ? "bg-background/20 text-background"
-                              : "bg-muted text-muted-foreground"
-                          )}
-                        >
-                          {count}
-                        </Badge>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            </motion.div>
-
-            {/* Grid */}
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {paginated.map((result, i) => (
-                <ResultCard key={result.platform} result={result} index={i} />
-              ))}
-              {Array.from({ length: skeletonCount }, (_, i) => (
-                <SkeletonCard key={`sk-${i}`} index={paginated.length + i} />
-              ))}
-            </div>
-
-            {/* Empty state */}
-            <AnimatePresence>
-              {done && filtered.length === 0 && (
-                <EmptyState onClear={clearFilters} />
-              )}
-            </AnimatePresence>
-
-            {/* Pagination */}
-            <AnimatePresence>
-              {totalPages > 1 && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.15 }}
-                  className="mt-8"
-                >
-                  <Pagination>
-                    <PaginationContent className="flex-wrap justify-center gap-1">
-                      <PaginationItem>
-                        <PaginationPrevious
-                          onClick={() => setPage(Math.max(1, currentPage - 1))}
-                          className={cn(
-                            "cursor-pointer select-none transition-opacity",
-                            currentPage <= 1 && "pointer-events-none opacity-40"
-                          )}
-                        />
-                      </PaginationItem>
-                      {getPageNumbers(currentPage, totalPages).map((p, i) =>
-                        p === "ellipsis" ? (
-                          <PaginationItem key={`e-${i}`}>
-                            <PaginationEllipsis />
-                          </PaginationItem>
-                        ) : (
-                          <PaginationItem key={p}>
-                            <PaginationLink
-                              isActive={currentPage === p}
-                              onClick={() => setPage(p)}
-                              className="cursor-pointer select-none transition-colors"
-                            >
-                              {p}
-                            </PaginationLink>
-                          </PaginationItem>
-                        )
-                      )}
-                      <PaginationItem>
-                        <PaginationNext
-                          onClick={() =>
-                            setPage(Math.min(totalPages, currentPage + 1))
-                          }
-                          className={cn(
-                            "cursor-pointer select-none transition-opacity",
-                            currentPage >= totalPages &&
-                              "pointer-events-none opacity-40"
-                          )}
-                        />
-                      </PaginationItem>
-                    </PaginationContent>
-                  </Pagination>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </>
+                <Pagination>
+                  <PaginationContent className="flex-wrap justify-center gap-1">
+                    <PaginationItem>
+                      <PaginationPrevious
+                        onClick={() => setPage(Math.max(1, currentPage - 1))}
+                        className={cn(
+                          "cursor-pointer select-none transition-opacity",
+                          currentPage <= 1 && "pointer-events-none opacity-40"
+                        )}
+                      />
+                    </PaginationItem>
+                    {getPageNumbers(currentPage, totalPages).map((p, i) =>
+                      p === "ellipsis" ? (
+                        <PaginationItem key={`e-${i}`}>
+                          <PaginationEllipsis />
+                        </PaginationItem>
+                      ) : (
+                        <PaginationItem key={p}>
+                          <PaginationLink
+                            isActive={currentPage === p}
+                            onClick={() => setPage(p)}
+                            className="cursor-pointer select-none transition-colors"
+                          >
+                            {p}
+                          </PaginationLink>
+                        </PaginationItem>
+                      )
+                    )}
+                    <PaginationItem>
+                      <PaginationNext
+                        onClick={() =>
+                          setPage(Math.min(totalPages, currentPage + 1))
+                        }
+                        className={cn(
+                          "cursor-pointer select-none transition-opacity",
+                          currentPage >= totalPages &&
+                            "pointer-events-none opacity-40"
+                        )}
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

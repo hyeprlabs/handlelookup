@@ -16,6 +16,6 @@ export async function GET() {
     return Response.json({ authenticated: true, isPro: true, unlimited: true });
   }
 
-  const { remaining, limit, allowed } = getRateLimitInfo(userId);
+  const { remaining, limit, allowed } = await getRateLimitInfo(userId);
   return Response.json({ authenticated: true, isPro: false, remaining, limit, allowed });
 }

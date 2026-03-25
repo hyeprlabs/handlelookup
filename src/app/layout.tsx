@@ -4,7 +4,7 @@ import { GeistMono } from "geist/font/mono";
 import { JsonLd } from "@/components/json-ld";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
-import { NuqsAdapter } from "nuqs/adapters/next/app";
+import { Providers } from "@/components/providers";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -40,8 +40,8 @@ export default function RootLayout({
     <ClerkProvider
       signInUrl="/sign-in"
       signUpUrl="/sign-up"
-      signInFallbackRedirectUrl="/app/profile"
-      signUpFallbackRedirectUrl="/app/profile"
+      signInFallbackRedirectUrl="/"
+      signUpFallbackRedirectUrl="/"
     >
       <html lang="en" className={cn(GeistSans.variable, GeistMono.variable, "font-sans")}>
         <body className="antialiased">
@@ -75,7 +75,7 @@ export default function RootLayout({
               ],
             }}
           />
-          <NuqsAdapter>{children}</NuqsAdapter>
+          <Providers>{children}</Providers>
         </body>
       </html>
     </ClerkProvider>

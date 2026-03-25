@@ -12,7 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { JsonLd } from "@/components/json-ld";
-import { DAILY_LIMIT } from "@/lib/rate-limit";
+import { DAILY_LIMIT } from "@/lib/constants";
 import { PLATFORMS } from "@/lib/platforms";
 
 export const metadata: Metadata = {

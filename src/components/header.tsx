@@ -11,6 +11,7 @@ import { MobileNav } from "@/components/mobile-nav";
 import { useAuth } from "@clerk/nextjs";
 import { UserDropdown } from "@/components/user-dropdown";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useUpgradeDrawer } from "@/components/providers";
 
 export const navLinks = [
   { label: "Features", href: "/features" },
@@ -22,6 +23,7 @@ export function Header() {
   const scrolled = useScroll(10);
   const { isLoaded, isSignedIn } = useAuth();
   const [isPro, setIsPro] = useState<boolean | null>(null);
+  const { openUpgrade } = useUpgradeDrawer();
 
   useEffect(() => {
     if (!isLoaded || !isSignedIn) { setIsPro(null); return; }
@@ -82,11 +84,14 @@ export function Header() {
                   Pro
                 </Badge>
               ) : (
-                <Button asChild size="sm" variant="outline" className="gap-1.5">
-                  <Link href="/pricing">
-                    <Zap className="size-3" />
-                    Upgrade
-                  </Link>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="gap-1.5"
+                  onClick={() => openUpgrade()}
+                >
+                  <Zap className="size-3" />
+                  Upgrade
                 </Button>
               )}
               <UserDropdown />

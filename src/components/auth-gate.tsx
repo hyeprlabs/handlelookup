@@ -5,7 +5,7 @@ import { Lock, Check, ArrowRight } from "lucide-react";
 import { motion } from "motion/react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { DAILY_LIMIT } from "@/lib/rate-limit";
+import { DAILY_LIMIT } from "@/lib/constants";
 import { PLATFORMS } from "@/lib/platforms";
 
 const EASE = [0.4, 0, 0.2, 1] as const;
