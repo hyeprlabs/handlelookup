@@ -47,7 +47,7 @@ import { cn } from "@/lib/utils";
 import { CATEGORIES, PLATFORMS, type Category } from "@/lib/platforms";
 import type { PlatformResult } from "@/lib/lookup";
 import { DAILY_LIMIT } from "@/lib/constants";
-import { useUpgradeDrawer } from "@/components/providers";
+import { UpgradeDialogDrawer } from "@/components/upgrade-dialog-drawer";
 
 // ── Constants ─────────────────────────────────────────────────────────────
 
@@ -101,10 +101,8 @@ function getPageNumbers(current: number, total: number): (number | "ellipsis")[]
 
 function LimitBadge({
   info,
-  onUpgrade,
 }: {
   info: LimitInfo | null;
-  onUpgrade: () => void;
 }) {
   if (!info || !info.authenticated || info.isPro || info.unlimited) return null;
 
@@ -115,21 +113,36 @@ function LimitBadge({
 
   if (isEmpty) {
     return (
-      <button
-        onClick={onUpgrade}
-        className="inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium text-muted-foreground transition-colors hover:border-foreground/20 hover:text-foreground"
-      >
-        <Zap className="size-3" />
-        0/{limit} · Upgrade
-      </button>
+      <UpgradeDialogDrawer>
+        <button
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium text-muted-foreground transition-colors hover:border-foreground/20 hover:text-foreground"
+        >
+          <Zap className="size-3" />
+          Upgrade
+        </button>
+      </UpgradeDialogDrawer>
     );
   }
 
   return (
-    <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border bg-muted/50 px-2.5 py-1 text-xs font-medium text-muted-foreground">
-      <span className="size-1.5 rounded-full bg-muted-foreground/40" />
-      {remaining}/{limit} today
-    </span>
+    <UpgradeDialogDrawer>
+      <button
+        className={cn(
+          "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors",
+          isLow
+            ? "border-foreground/30 text-foreground hover:bg-muted"
+            : "border-border text-muted-foreground hover:border-foreground/20 hover:text-foreground"
+        )}
+      >
+        <span>
+          {remaining}/{limit} free left
+        </span>
+        <span className="text-muted-foreground/60">·</span>
+        <span className="inline-flex items-center gap-1">
+          <Zap className="size-3" /> Pro
+        </span>
+      </button>
+    </UpgradeDialogDrawer>
   );
 }
 
@@ -142,28 +155,22 @@ function StatsBar({
   total: number;
   done: boolean;
 }) {
-  const available = results.filter((r) => r.status === "available").length;
-  const taken = results.filter((r) => r.status === "taken").length;
   const pct = total > 0 ? Math.round((results.length / total) * 100) : 0;
 
   return (
     <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-muted-foreground">
-      {!done ? (
-        <span className="flex items-center gap-1.5">
+      <span className="inline-flex items-center gap-1 text-xs">
+        <span className="size-1.5 rounded-full bg-muted-foreground/40" />
+        {results.length}/{total} checked
+      </span>
+      <span className="inline-flex items-center gap-1 text-xs">
+        <span className="size-1.5 rounded-full bg-muted-foreground/40" />
+        {pct}% coverage
+      </span>
+      {!done && (
+        <span className="inline-flex items-center gap-1 text-xs">
           <Spinner className="size-3" />
-          <span className="font-mono tabular-nums text-xs">{pct}%</span>
-        </span>
-      ) : (
-        <span className="tabular-nums text-xs">{results.length} platforms checked</span>
-      )}
-      {available > 0 && (
-        <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
-          {available} available
-        </span>
-      )}
-      {taken > 0 && (
-        <span className="text-xs font-medium text-red-600 dark:text-red-400">
-          {taken} taken
+          scanning...
         </span>
       )}
     </div>
@@ -312,7 +319,6 @@ function EmptyState({ onClear }: { onClear: () => void }) {
 
 export function LookupResults() {
   const { isSignedIn, isLoaded } = useAuth();
-  const { openUpgrade } = useUpgradeDrawer();
   const router = useRouter();
 
   const [q] = useQueryState("q", { defaultValue: "" });
@@ -539,14 +545,15 @@ export function LookupResults() {
           <p className="mt-1.5 text-xs text-muted-foreground">
             You&apos;ve used all {DAILY_LIMIT} free lookups for today.
           </p>
-          <Button
-            variant="outline"
-            size="sm"
-            className="mt-5"
-            onClick={openUpgrade}
-          >
-            Upgrade plan
-          </Button>
+          <UpgradeDialogDrawer>
+            <Button
+              variant="outline"
+              size="sm"
+              className="mt-5"
+            >
+              Upgrade plan
+            </Button>
+          </UpgradeDialogDrawer>
         </motion.div>
       )}
 
@@ -617,10 +624,7 @@ export function LookupResults() {
                     </SelectItem>
                   </SelectContent>
                 </Select>
-                <LimitBadge
-                  info={limitInfo}
-                  onUpgrade={openUpgrade}
-                />
+                <LimitBadge info={limitInfo} />
               </div>
             </div>
 

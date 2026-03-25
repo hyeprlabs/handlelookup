@@ -4,7 +4,7 @@ import { GeistMono } from "geist/font/mono";
 import { JsonLd } from "@/components/json-ld";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
-import { Providers } from "@/components/providers";
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -75,7 +75,7 @@ export default function RootLayout({
               ],
             }}
           />
-          <Providers>{children}</Providers>
+          <NuqsAdapter>{children}</NuqsAdapter>
         </body>
       </html>
     </ClerkProvider>
