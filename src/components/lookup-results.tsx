@@ -489,17 +489,14 @@ export function LookupResults() {
   const activeStatus = status ?? "all";
 
   // Derived state flags
-  const authLoading = !isLoaded && !!q;
+  const authLoading = !isLoaded;
   const showAuthGate = isLoaded && !isSignedIn && !!q;
   const showRateLimited = isLoaded && !!isSignedIn && !!q && rateLimited;
   const showResults = isLoaded && !!isSignedIn && !!q && !rateLimited;
 
   return (
     <AnimatePresence mode="wait">
-      {/* No query — idle prompt */}
-      {!q && <IdleState />}
-
-      {/* Auth loading with query in URL — skeleton prevents layout shift */}
+      {/* Clerk not yet initialized — show skeleton if query present, idle hint otherwise */}
       {authLoading && (
         <motion.div
           key="auth-loading"
@@ -508,9 +505,12 @@ export function LookupResults() {
           exit={{ opacity: 0 }}
           transition={{ duration: 0.15 }}
         >
-          <AuthLoadingState />
+          {q ? <AuthLoadingState /> : <IdleState />}
         </motion.div>
       )}
+
+      {/* No query — idle prompt */}
+      {!authLoading && !q && <IdleState />}
 
       {/* Not signed in — auth gate */}
       {showAuthGate && <AuthGate key="auth-gate" handle={q} />}

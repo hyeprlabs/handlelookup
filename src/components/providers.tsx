@@ -20,11 +20,9 @@ export const useUpgradeDrawer = () => useContext(UpgradeDrawerContext);
 
 export function Providers({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
-  const [handle, setHandle] = useState<string | undefined>();
   const [limitReached, setLimitReached] = useState(false);
 
   const openUpgrade = (opts?: { handle?: string; limitReached?: boolean }) => {
-    setHandle(opts?.handle);
     setLimitReached(opts?.limitReached ?? false);
     setOpen(true);
   };
@@ -33,11 +31,9 @@ export function Providers({ children }: { children: ReactNode }) {
     <UpgradeDrawerContext.Provider value={{ openUpgrade }}>
       <NuqsAdapter>
         {children}
-        {/* Rendered outside page tree so it's always available */}
         <UpgradeDrawer
           open={open}
           onOpenChange={setOpen}
-          handle={handle}
           limitReached={limitReached}
         />
       </NuqsAdapter>
