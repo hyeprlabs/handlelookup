@@ -1,8 +1,7 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
-import { InstagramIcon, LinkedinIcon } from "lucide-react";
+import { AtSign, InstagramIcon, LinkedinIcon } from "lucide-react";
 
 export function Footer() {
   return (
@@ -18,7 +17,10 @@ export function Footer() {
           {/* Brand column */}
           <div className="col-span-6 flex flex-col gap-4 md:col-span-3">
             <Link className="w-max" href="/">
-              <Logo className="h-5" />
+              <div className="flex items-center gap-2">
+                <AtSign className="size-4" />
+                <span className="text-sm font-semibold">Handle Lookup</span>
+              </div>
             </Link>
             <p className="max-w-sm text-balance text-muted-foreground text-sm">
               Check username availability across GitHub, Twitter, Instagram,
