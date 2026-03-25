@@ -8,6 +8,7 @@ import {
   XCircle,
   HelpCircle,
   Search,
+  SlidersHorizontal,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useQueryState, parseAsInteger } from "nuqs";
@@ -53,18 +54,32 @@ const STATUS_CFG = {
     label: "Available",
     icon: CheckCircle2,
     badge: "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+    dot: "bg-emerald-500",
   },
   taken: {
     label: "Taken",
     icon: XCircle,
     badge: "border-red-500/30 bg-red-500/10 text-red-600 dark:text-red-400",
+    dot: "bg-red-500",
   },
   unknown: {
     label: "Unknown",
     icon: HelpCircle,
-    badge: "text-muted-foreground",
+    badge: "border-border text-muted-foreground",
+    dot: "bg-muted-foreground/40",
   },
 } as const;
+
+// ── Animation variants ────────────────────────────────────────────────────
+
+const EASE = [0.4, 0, 0.2, 1] as const;
+
+const fadeUp = {
+  initial: { opacity: 0, y: 6 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -4 },
+  transition: { duration: 0.18, ease: EASE },
+};
 
 // ── Types ────────────────────────────────────────────────────────────────
 
@@ -98,7 +113,7 @@ function LimitBadge({ info }: { info: LimitInfo | null }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors",
+        "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors",
         isEmpty
           ? "border-red-500/30 bg-red-500/10 text-red-600 dark:text-red-400"
           : "border-border bg-muted/50 text-muted-foreground"
@@ -106,9 +121,9 @@ function LimitBadge({ info }: { info: LimitInfo | null }) {
     >
       <span className={cn("size-1.5 rounded-full", isEmpty ? "bg-red-500" : "bg-emerald-500")} />
       {isEmpty ? (
-        <>Limit reached · <Link href="/sign-in" className="underline underline-offset-2">Sign in</Link></>
+        <>Limit reached ·{" "}<Link href="/sign-in" className="underline underline-offset-2">Sign in</Link></>
       ) : (
-        `${remaining}/${limit} lookups today`
+        `${remaining}/${limit} today`
       )}
     </span>
   );
@@ -121,14 +136,22 @@ function StatsBar({ results, total, done }: { results: PlatformResult[]; total: 
     <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
       {!done ? (
         <span className="flex items-center gap-1.5">
-          <Spinner className="size-3.5" />
-          {results.length}&thinsp;/&thinsp;{total}
+          <Spinner className="size-3" />
+          <span className="tabular-nums">{results.length}<span className="opacity-40">/{total}</span></span>
         </span>
       ) : (
-        <span>{results.length} checked</span>
+        <span className="tabular-nums">{results.length} checked</span>
       )}
-      {available > 0 && <span className="font-medium text-emerald-600 dark:text-emerald-400">{available} available</span>}
-      {taken > 0 && <span className="font-medium text-red-600 dark:text-red-400">{taken} taken</span>}
+      {available > 0 && (
+        <span className="font-medium text-emerald-600 dark:text-emerald-400">
+          {available} available
+        </span>
+      )}
+      {taken > 0 && (
+        <span className="font-medium text-red-600 dark:text-red-400">
+          {taken} taken
+        </span>
+      )}
     </div>
   );
 }
@@ -138,12 +161,16 @@ function ResultCard({ result, index }: { result: PlatformResult; index: number }
   const Icon = cfg.icon;
   return (
     <motion.div
-      initial={{ opacity: 0, y: 8, scale: 0.98 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ duration: 0.2, delay: Math.min(index * 0.018, 0.22), ease: "easeOut" }}
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{
+        duration: 0.18,
+        delay: Math.min(index * 0.015, 0.18),
+        ease: EASE,
+      }}
     >
-      <Card className="group gap-0 p-0 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-        <CardHeader className="flex items-center justify-between px-4 py-2.5">
+      <Card className="group gap-0 p-0 transition-shadow duration-200 hover:shadow-sm">
+        <CardHeader className="flex items-center justify-between px-4 py-3">
           <CardTitle className="text-sm font-medium">{result.platform}</CardTitle>
           <CardAction>
             <Badge variant="outline" className={cn("gap-1 text-[11px]", cfg.badge)}>
@@ -153,18 +180,18 @@ function ResultCard({ result, index }: { result: PlatformResult; index: number }
           </CardAction>
         </CardHeader>
         <CardContent className="border-y px-4 py-2.5">
-          <p className="truncate text-xs text-muted-foreground">{result.url}</p>
+          <p className="truncate font-mono text-[11px] text-muted-foreground">{result.url}</p>
         </CardContent>
-        <CardFooter className="border-none px-4 py-2.5">
+        <CardFooter className="border-none px-4 py-3">
           <Button
-            variant="outline"
+            variant="ghost"
             size="sm"
-            className="w-full transition-colors duration-150 group-hover:border-foreground/20"
+            className="h-7 w-full text-xs text-muted-foreground transition-colors duration-150 hover:text-foreground"
             asChild
           >
             <Link href={result.url} target="_blank" rel="noopener noreferrer">
-              View on {result.platform}
-              <ExternalLink className="size-3 opacity-60 transition-opacity group-hover:opacity-100" />
+              View profile
+              <ExternalLink className="ml-auto size-3 opacity-50 transition-opacity group-hover:opacity-80" />
             </Link>
           </Button>
         </CardFooter>
@@ -177,21 +204,67 @@ function SkeletonCard({ index }: { index: number }) {
   return (
     <div
       className="animate-in fade-in fill-mode-backwards duration-300"
-      style={{ animationDelay: `${index * 15}ms` }}
+      style={{ animationDelay: `${index * 12}ms` }}
     >
       <Card className="gap-0 p-0">
-        <CardHeader className="flex items-center justify-between px-4 py-2.5">
-          <div className="h-4 w-24 animate-pulse rounded bg-muted" />
-          <div className="h-5 w-14 animate-pulse rounded-full bg-muted" />
+        <CardHeader className="flex items-center justify-between px-4 py-3">
+          <div className="h-3.5 w-20 animate-pulse rounded-sm bg-muted" />
+          <div className="h-5 w-16 animate-pulse rounded-full bg-muted" />
         </CardHeader>
         <CardContent className="border-y px-4 py-2.5">
-          <div className="h-3 w-36 animate-pulse rounded bg-muted" />
+          <div className="h-3 w-32 animate-pulse rounded-sm bg-muted" />
         </CardContent>
-        <CardFooter className="border-none px-4 py-2.5">
-          <div className="h-8 w-full animate-pulse rounded bg-muted" />
+        <CardFooter className="border-none px-4 py-3">
+          <div className="h-7 w-full animate-pulse rounded bg-muted" />
         </CardFooter>
       </Card>
     </div>
+  );
+}
+
+function IdleState() {
+  return (
+    <motion.div
+      key="idle"
+      {...fadeUp}
+      transition={{ duration: 0.22, delay: 0.15, ease: EASE }}
+      className="flex flex-col items-center justify-center py-20 text-center"
+    >
+      <p className="font-mono text-sm text-muted-foreground/60">
+        ↑ enter a handle to check availability
+      </p>
+      <p className="mt-1.5 font-mono text-xs text-muted-foreground/40">
+        checks across {PLATFORMS.length} platforms instantly
+      </p>
+    </motion.div>
+  );
+}
+
+function EmptyState({ onClear }: { onClear: () => void }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.15 }}
+      className="flex flex-col items-center justify-center py-20 text-center"
+    >
+      <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full border bg-muted/40">
+        <SlidersHorizontal className="size-4 text-muted-foreground" />
+      </div>
+      <p className="text-sm font-medium text-foreground">No results</p>
+      <p className="mt-1 text-xs text-muted-foreground">
+        No platforms match your current filters.
+      </p>
+      <Button
+        variant="ghost"
+        size="sm"
+        className="mt-4 h-7 text-xs"
+        onClick={onClear}
+      >
+        Clear filters
+      </Button>
+    </motion.div>
   );
 }
 
@@ -266,6 +339,7 @@ export function LookupResults() {
   const handleCategory = (v: string) => { setCategory(v); setPage(1); };
   const handleStatus = (v: string) => { setStatus(v); setPage(1); };
   const handleSearch = (v: string) => { setSearch(v); setPage(1); };
+  const clearFilters = () => { setCategory("all"); setStatus("all"); setSearch(""); };
 
   const filtered = useMemo(() => {
     let list = [...results];
@@ -303,42 +377,66 @@ export function LookupResults() {
 
   return (
     <AnimatePresence mode="wait">
+      {/* Idle state */}
+      {!q && <IdleState />}
+
+      {/* Rate-limited */}
+      {q && rateLimited && (
+        <motion.div
+          key="rate-limited"
+          {...fadeUp}
+          className="flex flex-col items-center justify-center py-20 text-center"
+        >
+          <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full border bg-muted/40">
+            <XCircle className="size-4 text-muted-foreground" />
+          </div>
+          <p className="text-sm font-medium">Daily limit reached</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            <Link href="/sign-in" className="underline underline-offset-2">Sign in</Link>{" "}
+            for unlimited lookups.
+          </p>
+        </motion.div>
+      )}
+
+      {/* Results */}
       {q && !rateLimited && (
         <motion.div
           key={q}
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -8 }}
-          transition={{ duration: 0.28, ease: [0.25, 0.46, 0.45, 0.94] }}
-          className="mx-auto w-full max-w-5xl px-4 py-6 md:px-8"
+          exit={{ opacity: 0, y: -4 }}
+          transition={{ duration: 0.2, ease: EASE }}
+          className="w-full py-6"
         >
           {/* Handle + stats */}
           <motion.div
             className="mb-3 flex flex-wrap items-baseline justify-between gap-2"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.2, delay: 0.08 }}
+            transition={{ duration: 0.15, delay: 0.06 }}
           >
-            <h2 className="text-xl font-semibold"><span className="font-mono">@{q}</span></h2>
+            <h2 className="text-lg font-semibold tracking-tight">
+              <span className="font-mono">@{q}</span>
+            </h2>
             <StatsBar results={results} total={totalPlatforms} done={done} />
           </motion.div>
 
-          {/* Progress */}
-          <div className={cn("mb-5 transition-opacity duration-500", done ? "opacity-0" : "opacity-100")}>
-            <Progress value={(results.length / totalPlatforms) * 100} className="h-0.5" />
+          {/* Progress bar */}
+          <div className={cn("mb-5 transition-opacity duration-700", done ? "opacity-0" : "opacity-100")}>
+            <Progress value={(results.length / totalPlatforms) * 100} className="h-px" />
           </div>
 
           {/* Filter toolbar */}
           <motion.div
-            className="mb-5 space-y-3"
-            initial={{ opacity: 0, y: 6 }}
+            className="mb-6 space-y-3"
+            initial={{ opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.22, delay: 0.12 }}
+            transition={{ duration: 0.18, delay: 0.1 }}
           >
-            {/* Row 1: search + status + limit */}
-            <div className="flex flex-wrap items-center gap-2">
+            {/* Search + status + limit */}
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
               <div className="relative min-w-0 flex-1">
-                <Search className="absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+                <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   placeholder="Search platforms…"
                   className="h-9 pl-8 text-sm"
@@ -346,34 +444,42 @@ export function LookupResults() {
                   onChange={(e) => handleSearch(e.target.value)}
                 />
               </div>
-              <Select value={activeStatus} onValueChange={handleStatus}>
-                <SelectTrigger className="h-9 w-36 text-sm">
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All results</SelectItem>
-                  <SelectItem value="available">
-                    <span className="flex items-center gap-1.5">
-                      <span className="size-1.5 rounded-full bg-emerald-500" />Available
-                    </span>
-                  </SelectItem>
-                  <SelectItem value="taken">
-                    <span className="flex items-center gap-1.5">
-                      <span className="size-1.5 rounded-full bg-red-500" />Taken
-                    </span>
-                  </SelectItem>
-                  <SelectItem value="unknown">
-                    <span className="flex items-center gap-1.5">
-                      <span className="size-1.5 rounded-full bg-muted-foreground/40" />Unknown
-                    </span>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-              <LimitBadge info={limitInfo} />
+              <div className="flex items-center gap-2">
+                <Select value={activeStatus} onValueChange={handleStatus}>
+                  <SelectTrigger className="h-9 w-full text-sm sm:w-36">
+                    <SelectValue placeholder="Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All results</SelectItem>
+                    <SelectItem value="available">
+                      <span className="flex items-center gap-1.5">
+                        <span className="size-1.5 rounded-full bg-emerald-500" />
+                        Available
+                      </span>
+                    </SelectItem>
+                    <SelectItem value="taken">
+                      <span className="flex items-center gap-1.5">
+                        <span className="size-1.5 rounded-full bg-red-500" />
+                        Taken
+                      </span>
+                    </SelectItem>
+                    <SelectItem value="unknown">
+                      <span className="flex items-center gap-1.5">
+                        <span className="size-1.5 rounded-full bg-muted-foreground/40" />
+                        Unknown
+                      </span>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+                <LimitBadge info={limitInfo} />
+              </div>
             </div>
 
-            {/* Row 2: category pills */}
-            <div className="flex gap-1.5 overflow-x-auto pb-0.5" style={{ scrollbarWidth: "none" }}>
+            {/* Category pills */}
+            <div
+              className="-mx-4 flex gap-1.5 overflow-x-auto px-4 pb-0.5"
+              style={{ scrollbarWidth: "none" }}
+            >
               {CATEGORIES.map((cat) => {
                 const count = catCounts[cat.id] ?? 0;
                 const isActive = activeCat === cat.id;
@@ -383,10 +489,10 @@ export function LookupResults() {
                     onClick={() => handleCategory(cat.id)}
                     className={cn(
                       "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium",
-                      "transition-all duration-150 active:scale-95",
+                      "transition-all duration-150 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                       isActive
                         ? "border-foreground/20 bg-foreground text-background"
-                        : "border-border bg-background text-muted-foreground hover:border-foreground/20 hover:text-foreground"
+                        : "border-border bg-background text-muted-foreground hover:border-foreground/15 hover:text-foreground"
                     )}
                   >
                     {cat.label}
@@ -395,7 +501,7 @@ export function LookupResults() {
                         variant="secondary"
                         className={cn(
                           "h-4 min-w-4 rounded-full px-1 text-[10px] font-semibold tabular-nums",
-                          isActive ? "bg-background/20 text-background" : ""
+                          isActive ? "bg-background/20 text-background" : "bg-muted text-muted-foreground"
                         )}
                       >
                         {count}
@@ -408,7 +514,7 @@ export function LookupResults() {
           </motion.div>
 
           {/* Results grid */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {paginated.map((result, i) => (
               <ResultCard key={result.platform} result={result} index={i} />
             ))}
@@ -417,24 +523,10 @@ export function LookupResults() {
             ))}
           </div>
 
-          {/* Empty state */}
+          {/* Empty state — no matches */}
           <AnimatePresence>
             {done && filtered.length === 0 && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                className="py-16 text-center"
-              >
-                <p className="text-sm text-muted-foreground">No platforms match your filters.</p>
-                <button
-                  onClick={() => { setCategory("all"); setStatus("all"); setSearch(""); }}
-                  className="mt-2 text-sm underline underline-offset-2 transition-opacity hover:opacity-70"
-                >
-                  Clear filters
-                </button>
-              </motion.div>
+              <EmptyState onClear={clearFilters} />
             )}
           </AnimatePresence>
 
@@ -445,20 +537,25 @@ export function LookupResults() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
+                transition={{ duration: 0.15 }}
                 className="mt-8"
               >
                 <Pagination>
-                  <PaginationContent>
+                  <PaginationContent className="flex-wrap justify-center gap-1">
                     <PaginationItem>
                       <PaginationPrevious
                         onClick={() => setPage(Math.max(1, currentPage - 1))}
-                        className={cn("cursor-pointer select-none transition-opacity", currentPage <= 1 && "pointer-events-none opacity-40")}
+                        className={cn(
+                          "cursor-pointer select-none transition-opacity",
+                          currentPage <= 1 && "pointer-events-none opacity-40"
+                        )}
                       />
                     </PaginationItem>
                     {getPageNumbers(currentPage, totalPages).map((p, i) =>
                       p === "ellipsis" ? (
-                        <PaginationItem key={`e-${i}`}><PaginationEllipsis /></PaginationItem>
+                        <PaginationItem key={`e-${i}`}>
+                          <PaginationEllipsis />
+                        </PaginationItem>
                       ) : (
                         <PaginationItem key={p}>
                           <PaginationLink
@@ -474,7 +571,10 @@ export function LookupResults() {
                     <PaginationItem>
                       <PaginationNext
                         onClick={() => setPage(Math.min(totalPages, currentPage + 1))}
-                        className={cn("cursor-pointer select-none transition-opacity", currentPage >= totalPages && "pointer-events-none opacity-40")}
+                        className={cn(
+                          "cursor-pointer select-none transition-opacity",
+                          currentPage >= totalPages && "pointer-events-none opacity-40"
+                        )}
                       />
                     </PaginationItem>
                   </PaginationContent>
@@ -482,23 +582,6 @@ export function LookupResults() {
               </motion.div>
             )}
           </AnimatePresence>
-        </motion.div>
-      )}
-
-      {q && rateLimited && (
-        <motion.div
-          key="rate-limited"
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
-          className="mx-auto w-full max-w-5xl px-4 py-12 text-center md:px-8"
-        >
-          <p className="text-sm text-muted-foreground">
-            Daily limit reached.{" "}
-            <Link href="/sign-in" className="underline underline-offset-2">Sign in</Link>{" "}
-            for unlimited lookups.
-          </p>
         </motion.div>
       )}
     </AnimatePresence>

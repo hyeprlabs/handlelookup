@@ -6,7 +6,7 @@ import { LookupForm } from "@/components/lookup-form";
 export function HeroSection() {
   return (
     <section>
-      <div className="relative flex flex-col items-center justify-center gap-5 px-4 py-12 md:px-4 md:py-24 lg:py-28">
+      <div className="relative flex flex-col items-center justify-center gap-5 px-6 py-14 md:px-8 md:py-24 lg:py-28">
         {/* Faded borders & radial gradient */}
         <div aria-hidden="true" className="absolute inset-0 -z-1 size-full overflow-hidden">
           <div
@@ -33,19 +33,17 @@ export function HeroSection() {
 
         <p
           className={cn(
-            "text-center text-muted-foreground text-sm tracking-wider sm:text-lg",
-            "fade-in slide-in-from-bottom-10 animate-in fill-mode-backwards delay-200 duration-500 ease-out",
+            "max-w-md text-center text-muted-foreground text-sm tracking-wider sm:text-base",
+            "fade-in slide-in-from-bottom-6 animate-in fill-mode-backwards delay-200 duration-500 ease-out",
           )}
         >
-          Enter a username once and instantly see where it is available, <br />
-          so you can claim the right handle faster.
+          Enter a username once and instantly see where it&apos;s available across hundreds of platforms.
         </p>
 
         <LookupForm />
       </div>
 
-      {/* Bottom border with corner deco marks */}
-      {/* Bottom decorative divider — single line with corner marks */}
+      {/* Bottom decorative divider */}
       <div className="relative">
         <DecorIcon className="size-4" position="top-left" />
         <DecorIcon className="size-4" position="top-right" />
