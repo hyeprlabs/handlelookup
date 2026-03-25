@@ -30,14 +30,23 @@ export interface Platform {
 
 // ── Category Rules ──────────────────────────────────────────────────────────
 
-// Business-first: platforms every new business founder should claim
+// Business: platforms every founder should claim — social channels + professional tools
 const BUSINESS = new Set([
+  // Social networks every business needs
+  "Twitter",
+  "Instagram",
+  "YouTube",
+  "TikTok",
   "LinkedIn",
+  "Pinterest",
+  // Discovery & launch
   "ProductHunt",
+  // Creator monetization
   "Patreon",
   "Gumroad",
   "kofi",
   "BuyMeACoffee",
+  // Freelance & tools
   "Freelancer",
   "Trello",
   "Wix",
@@ -45,13 +54,8 @@ const BUSINESS = new Set([
 
 const FEATURED = new Set([
   "GitHub",
-  "Instagram",
-  "Twitter",
-  "TikTok",
-  "YouTube",
   "Reddit",
   "Snapchat",
-  "Pinterest",
   "Twitch",
   "Discord",
   "Telegram",
@@ -168,21 +172,15 @@ export const PLATFORMS: Platform[] = Object.entries(rawData)
     return a.name.localeCompare(b.name);
   });
 
-const countOf = (cat: Category | "all") =>
-  cat === "all" ? PLATFORMS.length : PLATFORMS.filter((p) => p.category === cat).length;
-
-export const CATEGORIES: {
-  id: Category | "all";
-  label: string;
-}[] = [
-  { id: "all", label: `All (${countOf("all")})` },
-  { id: "featured", label: `Featured (${countOf("featured")})` },
-  { id: "business", label: `Business (${countOf("business")})` },
-  { id: "social", label: `Social (${countOf("social")})` },
-  { id: "developer", label: `Developer (${countOf("developer")})` },
-  { id: "gaming", label: `Gaming (${countOf("gaming")})` },
-  { id: "creative", label: `Creative (${countOf("creative")})` },
-  { id: "music", label: `Music (${countOf("music")})` },
-  { id: "writing", label: `Writing (${countOf("writing")})` },
-  { id: "other", label: `Other (${countOf("other")})` },
+export const CATEGORIES: { id: Category | "all"; label: string }[] = [
+  { id: "all", label: "All" },
+  { id: "featured", label: "Featured" },
+  { id: "business", label: "Business" },
+  { id: "social", label: "Social" },
+  { id: "developer", label: "Developer" },
+  { id: "gaming", label: "Gaming" },
+  { id: "creative", label: "Creative" },
+  { id: "music", label: "Music" },
+  { id: "writing", label: "Writing" },
+  { id: "other", label: "Other" },
 ];

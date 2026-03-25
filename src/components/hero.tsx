@@ -45,13 +45,11 @@ export function HeroSection() {
       </div>
 
       {/* Bottom border with corner deco marks */}
+      {/* Bottom decorative divider — single line with corner marks */}
       <div className="relative">
         <DecorIcon className="size-4" position="top-left" />
         <DecorIcon className="size-4" position="top-right" />
-        <DecorIcon className="size-4" position="bottom-left" />
-        <DecorIcon className="size-4" position="bottom-right" />
         <FullWidthDivider position="top" />
-        <FullWidthDivider position="bottom" />
       </div>
     </section>
   );
