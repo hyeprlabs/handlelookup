@@ -26,34 +26,29 @@ export async function GET(request: NextRequest) {
   const { userId, has } = await auth();
   let isUnlimited = false;
 
-  if (userId) {
-    // Authenticated user — check if they have an active Pro subscription via Clerk Billing
-    const isPro = has({ plan: "user:pro" });
+  if (!userId) {
+    // Anonymous users cannot perform lookups — sign in required
+    return Response.json(
+      { error: "Sign in to use Handle Lookup", code: "UNAUTHENTICATED" },
+      { status: 401 }
+    );
+  }
 
-    if (isPro) {
-      isUnlimited = true;
-    } else {
-      // Free authenticated user — apply per-user daily limit
-      const { allowed } = getRateLimitInfo(userId);
-      if (!allowed) {
-        return Response.json(
-          { error: "Daily limit reached", code: "RATE_LIMITED" },
-          { status: 429 }
-        );
-      }
-      incrementUsage(userId);
-    }
+  // Authenticated user — check if they have an active Pro subscription via Clerk Billing
+  const isPro = has({ plan: "user:pro" });
+
+  if (isPro) {
+    isUnlimited = true;
   } else {
-    // Anonymous user — limit by IP
-    const ip = getClientIp(request);
-    const { allowed } = getRateLimitInfo(ip);
+    // Free authenticated user — apply per-user daily limit
+    const { allowed } = getRateLimitInfo(userId);
     if (!allowed) {
       return Response.json(
         { error: "Daily limit reached", code: "RATE_LIMITED" },
         { status: 429 }
       );
     }
-    incrementUsage(ip);
+    incrementUsage(userId);
   }
 
   const encoder = new TextEncoder();
