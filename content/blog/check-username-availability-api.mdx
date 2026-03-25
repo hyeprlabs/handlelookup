@@ -1,0 +1,136 @@
+---
+title: "How to Check Username Availability with a Single API Call"
+description: "Learn how to use the Handle Lookup API to check username availability across 65+ platforms in one HTTP request — and integrate it into your app in minutes."
+date: "2026-01-15"
+category: "tutorials"
+tags: ["api", "tutorial", "username", "developer", "integration"]
+author: "Handle Lookup Team"
+---
+
+import { Callout } from "fumadocs-ui/components/callout";
+
+## Introduction
+
+Building an app where users pick a username? You've probably run into the problem: checking whether `@johndoe` is available on GitHub, Twitter, Instagram, and TikTok individually requires four separate API calls, four different authentication flows, and four different response formats.
+
+Handle Lookup solves this with a single unified API endpoint.
+
+## What You'll Build
+
+In this tutorial, you'll learn how to:
+
+- Make your first Handle Lookup API call
+- Parse the structured JSON response
+- Integrate availability checks into a signup flow
+- Handle rate limits and errors gracefully
+
+<Callout type="info" title="Free Tier Available">
+  You can make your first 100 requests for free — no credit card required. Sign up at handlelookup.com to get your API key.
+</Callout>
+
+## Making Your First Request
+
+The Handle Lookup API follows a simple REST pattern. Here's everything you need:
+
+```
+GET https://api.handlelookup.com/v1/check?username=johndoe
+Authorization: Bearer YOUR_API_KEY
+```
+
+That's it. One endpoint, one parameter, one auth header.
+
+### Response Format
+
+The API returns a consistent JSON structure regardless of which platforms are checked:
+
+```json
+{
+  "username": "johndoe",
+  "checked_at": "2026-01-15T10:23:45Z",
+  "platforms": {
+    "github": { "available": false, "url": "https://github.com/johndoe" },
+    "twitter": { "available": true },
+    "instagram": { "available": false, "url": "https://instagram.com/johndoe" },
+    "tiktok": { "available": true }
+  }
+}
+```
+
+Every platform follows the same shape: `available` (boolean) and optionally `url` (the profile URL when taken).
+
+## Integrating Into a Signup Flow
+
+Here's a real-world example using JavaScript's `fetch` API:
+
+```javascript
+async function checkUsernameAvailability(username) {
+  const response = await fetch(
+    `https://api.handlelookup.com/v1/check?username=${encodeURIComponent(username)}`,
+    {
+      headers: {
+        Authorization: `Bearer ${process.env.HANDLELOOKUP_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(`API error: ${response.status}`);
+  }
+
+  return response.json();
+}
+```
+
+### Debouncing for Real-Time Checks
+
+If you're checking as the user types, debounce your API calls to avoid rate limits:
+
+```javascript
+import { useDebouncedCallback } from "use-debounce";
+
+const checkUsername = useDebouncedCallback(async (value) => {
+  const result = await checkUsernameAvailability(value);
+  setAvailability(result.platforms);
+}, 500);
+```
+
+<Callout type="warn" title="Rate Limits">
+  Free tier accounts are limited to 10 requests per minute. Pro accounts get 100 requests per minute with burst support. Build in exponential backoff for production use.
+</Callout>
+
+## Filtering by Platform
+
+You can request a subset of platforms using the `platforms` query parameter:
+
+```
+GET /v1/check?username=johndoe&platforms=github,twitter,instagram
+```
+
+This reduces response time and credits used when you only need specific platforms.
+
+## Error Handling
+
+Always handle the following status codes in your integration:
+
+| Status | Meaning |
+|--------|---------|
+| `200` | Success — check the `platforms` object |
+| `400` | Invalid username format |
+| `401` | Invalid or missing API key |
+| `429` | Rate limit exceeded |
+| `503` | Upstream platform temporarily unavailable |
+
+<Callout type="success" title="Platform Unavailability">
+  When a platform returns a `503`, Handle Lookup retries automatically and marks that platform's result as `"status": "unavailable"` in the response rather than failing the entire request.
+</Callout>
+
+## Next Steps
+
+Now that you have the basics, here's what to explore next:
+
+- **Webhooks**: Set up real-time notifications when a username becomes available
+- **Bulk checks**: The `/v1/bulk` endpoint lets you check multiple usernames in one request
+- **Platform groups**: Use named groups like `social`, `developer`, or `gaming` instead of listing platforms individually
+
+Check out the [API documentation](/features/api) for the full reference, or [sign up](/sign-up) to get your API key and start building.

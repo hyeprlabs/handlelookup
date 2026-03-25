@@ -1,0 +1,327 @@
+---
+title: "Build a Real-Time Username Checker in Your Signup Flow"
+description: "A step-by-step guide to adding live cross-platform username availability checking to your app's signup form using the Handle Lookup API and React."
+date: "2026-02-18"
+category: "tutorials"
+tags: ["tutorial", "react", "signup", "ux", "real-time", "api"]
+author: "Handle Lookup Team"
+---
+
+import { Callout } from "fumadocs-ui/components/callout";
+
+## Overview
+
+When a user signs up for your app with a username, they often want that same handle across other platforms. Showing them availability in real-time — as they type — adds genuine value and reduces friction.
+
+In this guide, we'll build a signup form with a username field that shows cross-platform availability as the user types, powered by the Handle Lookup API.
+
+## What We're Building
+
+By the end of this tutorial you'll have:
+
+- A username input with debounced API calls
+- Real-time availability indicators for GitHub, Twitter, Instagram, and TikTok
+- Proper loading and error states
+- A styled status badge for each platform
+
+## Prerequisites
+
+- A Handle Lookup API key (free at [handlelookup.com](/sign-up))
+- A React project (Next.js, Vite, or Create React App)
+- Basic familiarity with React hooks
+
+<Callout type="info" title="API Key Setup">
+  Store your API key as `NEXT_PUBLIC_HANDLELOOKUP_KEY` (for client-side Next.js) or `HANDLELOOKUP_KEY` (for server-side usage). Never expose your API key in client-side code in production — proxy through a Next.js API route instead.
+</Callout>
+
+## Step 1: Create the API Helper
+
+First, create a utility function to call the Handle Lookup API. In production, you'll want to proxy this through your backend to hide your API key:
+
+```typescript
+// lib/handle-lookup.ts
+export type PlatformResult = {
+  available: boolean;
+  url?: string;
+  status?: "unavailable";
+};
+
+export type CheckResult = {
+  username: string;
+  checked_at: string;
+  platforms: Record<string, PlatformResult>;
+};
+
+export async function checkUsername(username: string): Promise<CheckResult> {
+  const res = await fetch(`/api/check-username?username=${encodeURIComponent(username)}`);
+
+  if (!res.ok) {
+    throw new Error(`Check failed: ${res.status}`);
+  }
+
+  return res.json();
+}
+```
+
+## Step 2: Create the API Route (Next.js)
+
+Create a server-side API route to proxy the request securely:
+
+```typescript
+// app/api/check-username/route.ts
+import { NextRequest, NextResponse } from "next/server";
+
+export async function GET(request: NextRequest) {
+  const username = request.nextUrl.searchParams.get("username");
+
+  if (!username || username.length < 2) {
+    return NextResponse.json({ error: "Invalid username" }, { status: 400 });
+  }
+
+  const response = await fetch(
+    `https://api.handlelookup.com/v1/check?username=${encodeURIComponent(username)}&platforms=github,twitter,instagram,tiktok`,
+    {
+      headers: {
+        Authorization: `Bearer ${process.env.HANDLELOOKUP_KEY}`,
+      },
+      // Cache for 30 seconds to avoid hammering the API
+      next: { revalidate: 30 },
+    }
+  );
+
+  if (!response.ok) {
+    return NextResponse.json(
+      { error: "Upstream API error" },
+      { status: response.status }
+    );
+  }
+
+  const data = await response.json();
+  return NextResponse.json(data);
+}
+```
+
+## Step 3: Build the Username Input Hook
+
+Create a custom hook that manages the debounced checking logic:
+
+```typescript
+// hooks/use-username-check.ts
+import { useState, useEffect, useRef } from "react";
+import { checkUsername, type CheckResult } from "@/lib/handle-lookup";
+
+type State = {
+  status: "idle" | "loading" | "success" | "error";
+  data: CheckResult | null;
+  error: string | null;
+};
+
+export function useUsernameCheck(username: string) {
+  const [state, setState] = useState<State>({
+    status: "idle",
+    data: null,
+    error: null,
+  });
+  const timerRef = useRef<ReturnType<typeof setTimeout>>();
+
+  useEffect(() => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+
+    if (!username || username.length < 3) {
+      setState({ status: "idle", data: null, error: null });
+      return;
+    }
+
+    setState((prev) => ({ ...prev, status: "loading" }));
+
+    timerRef.current = setTimeout(async () => {
+      try {
+        const data = await checkUsername(username);
+        setState({ status: "success", data, error: null });
+      } catch (err) {
+        setState({
+          status: "error",
+          data: null,
+          error: err instanceof Error ? err.message : "Check failed",
+        });
+      }
+    }, 500); // 500ms debounce
+
+    return () => clearTimeout(timerRef.current);
+  }, [username]);
+
+  return state;
+}
+```
+
+## Step 4: Build the Platform Badge Component
+
+Create a component to display the availability status for each platform:
+
+```tsx
+// components/platform-badge.tsx
+import { Check, X, Loader2, AlertCircle } from "lucide-react";
+import type { PlatformResult } from "@/lib/handle-lookup";
+
+const platformMeta: Record<string, { name: string; color: string }> = {
+  github: { name: "GitHub", color: "#24292e" },
+  twitter: { name: "X / Twitter", color: "#000000" },
+  instagram: { name: "Instagram", color: "#e1306c" },
+  tiktok: { name: "TikTok", color: "#000000" },
+};
+
+type Props = {
+  platform: string;
+  result?: PlatformResult;
+  loading?: boolean;
+};
+
+export function PlatformBadge({ platform, result, loading }: Props) {
+  const meta = platformMeta[platform] ?? { name: platform, color: "#666" };
+
+  return (
+    <div className="flex items-center gap-2 rounded-lg border px-3 py-2 text-sm">
+      <span className="font-medium text-foreground">{meta.name}</span>
+      <span className="ml-auto">
+        {loading ? (
+          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+        ) : !result ? (
+          <span className="text-xs text-muted-foreground">—</span>
+        ) : result.status === "unavailable" ? (
+          <AlertCircle className="h-4 w-4 text-muted-foreground" />
+        ) : result.available ? (
+          <Check className="h-4 w-4 text-green-500" />
+        ) : (
+          <X className="h-4 w-4 text-destructive" />
+        )}
+      </span>
+    </div>
+  );
+}
+```
+
+## Step 5: Compose the Signup Form
+
+Now wire everything together in the signup form:
+
+```tsx
+// components/signup-form.tsx
+"use client";
+
+import { useState } from "react";
+import { useUsernameCheck } from "@/hooks/use-username-check";
+import { PlatformBadge } from "@/components/platform-badge";
+
+const CHECKED_PLATFORMS = ["github", "twitter", "instagram", "tiktok"];
+
+export function SignupForm() {
+  const [username, setUsername] = useState("");
+  const { status, data } = useUsernameCheck(username);
+
+  return (
+    <div className="mx-auto max-w-md space-y-6">
+      <div className="space-y-2">
+        <label htmlFor="username" className="text-sm font-medium">
+          Choose a username
+        </label>
+        <input
+          id="username"
+          type="text"
+          value={username}
+          onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ""))}
+          placeholder="yourhandle"
+          className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+        />
+        <p className="text-xs text-muted-foreground">
+          3-20 characters, letters, numbers, underscores, and hyphens only.
+        </p>
+      </div>
+
+      {username.length >= 3 && (
+        <div className="space-y-2">
+          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            Cross-platform availability
+          </p>
+          <div className="grid grid-cols-2 gap-2">
+            {CHECKED_PLATFORMS.map((platform) => (
+              <PlatformBadge
+                key={platform}
+                platform={platform}
+                loading={status === "loading"}
+                result={data?.platforms[platform]}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+## Adding UX Polish
+
+### Visual Feedback for Fully Available Usernames
+
+When all platforms show as available, highlight the field in green to give users a moment of delight:
+
+```tsx
+const allAvailable =
+  data &&
+  Object.values(data.platforms).every((p) => p.available && p.status !== "unavailable");
+
+<div className={cn(
+  "rounded-lg border px-3 py-2",
+  allAvailable && "border-green-500 ring-1 ring-green-500"
+)}>
+```
+
+### Showing a Summary
+
+Add a summary line below the badges:
+
+```tsx
+{data && (
+  <p className="text-sm text-muted-foreground">
+    {Object.values(data.platforms).filter((p) => p.available).length} of{" "}
+    {CHECKED_PLATFORMS.length} platforms available
+  </p>
+)}
+```
+
+<Callout type="success" title="Performance Tip">
+  Cache results in React state keyed by username so re-typing a previously checked handle doesn't trigger a new API call. The debounce handles the happy path; memoization handles back-and-forth edits.
+</Callout>
+
+## Handling Edge Cases
+
+### Username Validation Before API Calls
+
+Don't call the API for obviously invalid usernames:
+
+```typescript
+const VALID_USERNAME = /^[a-z0-9_-]{3,20}$/i;
+
+if (!VALID_USERNAME.test(username)) return; // skip API call
+```
+
+### Rate Limit Handling
+
+When you receive a `429`, show a friendly message and back off:
+
+```typescript
+if (res.status === 429) {
+  const retryAfter = res.headers.get("Retry-After") ?? "60";
+  throw new Error(`Rate limited. Try again in ${retryAfter} seconds.`);
+}
+```
+
+## Conclusion
+
+With fewer than 100 lines of code, you've added a feature that genuinely improves your signup experience. Users don't just get a username for your app — they get clarity on their entire digital presence.
+
+The same pattern extends naturally to brand name selection tools, domain checkers, and any flow where consistent online identity matters.
+
+- View the [API reference](/features/api) for all available parameters
+- Get your [API key](/sign-up) and start building
+- Check the [changelog](/blog/handle-lookup-v2-release) for the latest SDK and bulk endpoint updates

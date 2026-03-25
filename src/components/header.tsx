@@ -15,6 +15,10 @@ export const navLinks = [
     href: "/features",
   },
   {
+    label: "Blog",
+    href: "/blog",
+  },
+  {
     label: "Pricing",
     href: "/pricing",
   },
