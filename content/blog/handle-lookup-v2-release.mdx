@@ -1,0 +1,188 @@
+---
+title: "Handle Lookup v2: Faster Lookups, More Platforms, New Developer Tools"
+description: "Today we're releasing Handle Lookup v2 with 2x faster response times, 25 new platforms, a redesigned dashboard, and a new bulk API endpoint."
+date: "2026-03-01"
+category: "changelog"
+tags: ["release", "changelog", "api", "new-features", "platforms"]
+author: "Handle Lookup Team"
+---
+
+import { Callout } from "fumadocs-ui/components/callout";
+
+## What's New in v2
+
+After three months of development, Handle Lookup v2 is here. This is our biggest release since launch, touching every part of the product: the API, the dashboard, the platform coverage, and the developer experience.
+
+Here's everything that changed.
+
+## API Improvements
+
+### 2x Faster Response Times
+
+We rewrote our platform check orchestration layer from scratch. Where v1 used a sequential waterfall with aggressive timeouts, v2 uses a parallel fanout architecture with smarter timeout budgets per platform category.
+
+The result: **median response time dropped from 1.2s to 580ms** for a full 65-platform check. P95 went from 3.8s to 1.4s.
+
+### New Bulk Endpoint
+
+The most requested feature from developers: check multiple usernames in a single request.
+
+```
+POST /v1/bulk
+Content-Type: application/json
+
+{
+  "usernames": ["johndoe", "janedoe", "johnd"],
+  "platforms": ["github", "twitter", "instagram"]
+}
+```
+
+The response maps each username to its platform results. Rate limits apply per-username, not per-request, so bulk is genuinely more efficient for batch use cases.
+
+<Callout type="info" title="Bulk Limits">
+  Free tier: 10 usernames per bulk request. Pro tier: 100 usernames per request. Enterprise: no limit, with dedicated infrastructure.
+</Callout>
+
+### Structured Error Responses
+
+v1 had inconsistent error formats — some endpoints returned `{ error: "message" }`, others used `{ message: "..." }`. v2 standardizes on:
+
+```json
+{
+  "error": {
+    "code": "RATE_LIMIT_EXCEEDED",
+    "message": "You have exceeded 10 requests per minute.",
+    "retry_after": 47,
+    "docs": "https://handlelookup.com/docs/errors#RATE_LIMIT_EXCEEDED"
+  }
+}
+```
+
+Every error now includes a `docs` link pointing directly to the relevant documentation section.
+
+### Webhook Support
+
+You can now subscribe to username availability changes. When a handle you're watching becomes available, we'll POST to your endpoint within 60 seconds.
+
+```json
+POST /v1/webhooks
+{
+  "username": "coolbrand",
+  "platforms": ["twitter", "instagram"],
+  "url": "https://yourapp.com/webhooks/handle-lookup",
+  "secret": "your_webhook_secret"
+}
+```
+
+## New Platforms — 25 Added
+
+v2 brings our total platform count to **65 platforms** (up from 40). New additions include:
+
+**Social & Video**
+- Threads
+- Bluesky
+- Mastodon (mastodon.social)
+- Kick
+- Rumble
+
+**Developer**
+- Crates.io
+- PyPI
+- RubyGems
+- Hex (Elixir)
+- Packagist (PHP)
+
+**Gaming**
+- Valorant
+- Riot Games
+- Epic Games
+- Battlenet
+- Ubisoft Connect
+
+**Professional**
+- Substack
+- Medium
+- Hashnode
+- DevTo
+- Behance
+
+**Commerce**
+- Gumroad
+- Patreon
+- Ko-fi
+- Buy Me a Coffee
+- Lemon Squeezy
+
+<Callout type="success" title="Request a Platform">
+  Missing a platform you need? Use the feedback button in the dashboard to request it. We prioritize additions based on developer demand.
+</Callout>
+
+## Dashboard Redesign
+
+The v1 dashboard was functional but sparse. v2 ships a completely redesigned interface:
+
+- **Usage analytics**: See your API calls over time, broken down by endpoint, platform, and response time
+- **API key management**: Create multiple keys with custom rate limits and labels
+- **Saved checks**: Bookmark username+platform combinations and re-run them with one click
+- **Team support**: Invite team members and assign roles (admin, developer, viewer)
+
+## Developer Experience
+
+### TypeScript SDK
+
+Install the official TypeScript/JavaScript SDK:
+
+```bash
+npm install @handlelookup/sdk
+```
+
+```typescript
+import { HandleLookup } from "@handlelookup/sdk";
+
+const client = new HandleLookup({ apiKey: process.env.HANDLELOOKUP_API_KEY });
+
+const result = await client.check("johndoe", {
+  platforms: ["github", "twitter", "instagram"],
+});
+
+console.log(result.platforms.github.available); // true or false
+```
+
+The SDK handles retries, rate limit backoff, and TypeScript types automatically.
+
+### OpenAPI Spec
+
+The v2 API is fully documented with an OpenAPI 3.1 spec, available at:
+
+```
+GET https://api.handlelookup.com/v1/openapi.json
+```
+
+Import it into Postman, Insomnia, or generate a client in any language using openapi-generator.
+
+## Migration from v1
+
+v2 is backwards-compatible for most use cases. The main breaking change is in error response format — if you're pattern-matching on `response.message`, update to `response.error.message`.
+
+The v1 API remains available until **June 1, 2026**, giving you three months to migrate. After that date, v1 endpoints will redirect to v2 equivalents.
+
+<Callout type="warn" title="v1 Deprecation">
+  All v1 API keys continue to work with v2. You do not need to rotate your keys — just update your base URL from `/v1` to `/v2` and handle the new error format.
+</Callout>
+
+## What's Coming in v3
+
+We're already planning the next milestone. Here's what's on the roadmap:
+
+- **Real-time availability streaming** — WebSocket endpoint for watching handle availability changes live
+- **AI-powered suggestions** — When your preferred handle is taken, get instant suggestions for available alternatives
+- **Platform history** — See when a handle was first registered and when it last posted
+- **WHOIS integration** — Domain availability alongside social handles in a single check
+
+Follow us on [Twitter/X](https://x.com/hyeprlabs) or join our [mailing list](/sign-up) to be first to know when v3 ships.
+
+---
+
+Thank you to everyone who filed bug reports, sent feature requests, and shared how they're building with Handle Lookup. v2 wouldn't exist without that feedback.
+
+Happy building.
