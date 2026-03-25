@@ -1,7 +1,5 @@
 import { cn } from "@/lib/utils";
-import { DecorIcon } from "@/components/ui/decor-icon";
 import { FullWidthDivider } from "@/components/ui/full-width-divider";
-import { PlatformsGrid } from "@/components/platforms-grid";
 import { LookupForm } from "@/components/lookup-form";
 
 export function HeroSection() {
@@ -46,16 +44,7 @@ export function HeroSection() {
 
         <LookupForm />
       </div>
-      <div className="relative">
-        <DecorIcon className="size-4" position="top-left" />
-        <DecorIcon className="size-4" position="top-right" />
-        <DecorIcon className="size-4" position="bottom-left" />
-        <DecorIcon className="size-4" position="bottom-right" />
-
-        <FullWidthDivider className="-top-px" />
-        <PlatformsGrid />
-        <FullWidthDivider className="-bottom-px" />
-      </div>
+      <FullWidthDivider className="-bottom-px" />
     </section>
   );
 }

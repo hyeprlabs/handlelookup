@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { GeistSans } from "geist/font/sans";
+import { GeistMono } from "geist/font/mono";
 import { JsonLd } from "@/components/json-ld";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
@@ -41,7 +43,7 @@ export default function RootLayout({
       signInFallbackRedirectUrl="/app/profile"
       signUpFallbackRedirectUrl="/app/profile"
     >
-      <html lang="en" className={cn("font-sans")}>
+      <html lang="en" className={cn(GeistSans.variable, GeistMono.variable, "font-sans")}>
         <body className="antialiased">
           <JsonLd
             data={{

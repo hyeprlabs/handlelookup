@@ -1,20 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useQueryState } from "nuqs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Search } from "lucide-react";
 
 export function LookupForm() {
-  const [handle, setHandle] = useState("");
-  const router = useRouter();
+  const [q, setQ] = useQueryState("q", { defaultValue: "" });
+  const [input, setInput] = useState(q ?? "");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const trimmed = handle.trim().replace(/^@/, "");
-    if (trimmed) {
-      router.push(`/lookup/${encodeURIComponent(trimmed)}`);
-    }
+    const trimmed = input.trim().replace(/^@/, "");
+    if (trimmed) setQ(trimmed);
   };
 
   return (
@@ -24,13 +23,16 @@ export function LookupForm() {
     >
       <Input
         aria-label="handle"
-        className="h-9"
+        className="h-9 min-w-56"
         placeholder="Try a handle (e.g. alex)"
         type="text"
-        value={handle}
-        onChange={(e) => setHandle(e.target.value)}
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
       />
-      <Button type="submit">Check Availability</Button>
+      <Button type="submit">
+        <Search className="size-4" />
+        Check
+      </Button>
     </form>
   );
 }

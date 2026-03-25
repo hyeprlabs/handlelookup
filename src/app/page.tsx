@@ -1,7 +1,9 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { cn } from "@/lib/utils";
 import { Header } from "@/components/header"; // @efferd/header-2
 import { HeroSection } from "@/components/hero";
+import { LookupResults } from "@/components/lookup-results";
 import { LogosSection } from "@/components/logos-section";
 import { CallToAction } from "@/components/cta";
 import { Footer } from "@/components/footer";
@@ -61,7 +63,10 @@ export default function Page() {
           "after:absolute after:-inset-y-14 after:-right-px after:w-px after:bg-border",
         )}
       >
-        <HeroSection />
+        <Suspense>
+          <HeroSection />
+          <LookupResults />
+        </Suspense>
         <LogosSection />
         <CallToAction />
         <Footer />
