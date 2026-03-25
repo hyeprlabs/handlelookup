@@ -24,12 +24,15 @@ export async function GET(request: NextRequest) {
   }
 
   const { userId, has } = await auth();
+  let isUnlimited = false;
 
   if (userId) {
     // Authenticated user — check if they have an active Pro subscription via Clerk Billing
     const isPro = has({ plan: "user:pro" });
 
-    if (!isPro) {
+    if (isPro) {
+      isUnlimited = true;
+    } else {
       // Free authenticated user — apply per-user daily limit
       const { allowed } = getRateLimitInfo(userId);
       if (!allowed) {
@@ -40,7 +43,6 @@ export async function GET(request: NextRequest) {
       }
       incrementUsage(userId);
     }
-    // Pro users proceed without rate limiting
   } else {
     // Anonymous user — limit by IP
     const ip = getClientIp(request);
@@ -79,13 +81,16 @@ export async function GET(request: NextRequest) {
     },
   });
 
-  return new Response(stream, {
-    headers: {
-      "Content-Type": "text/event-stream",
-      "Cache-Control": "no-cache",
-      Connection: "keep-alive",
-      "X-Accel-Buffering": "no",
-      "X-Daily-Limit": String(DAILY_LIMIT),
-    },
-  });
+  const headers: Record<string, string> = {
+    "Content-Type": "text/event-stream",
+    "Cache-Control": "no-cache",
+    Connection: "keep-alive",
+    "X-Accel-Buffering": "no",
+  };
+  // Only include the daily limit header for rate-limited users
+  if (!isUnlimited) {
+    headers["X-Daily-Limit"] = String(DAILY_LIMIT);
+  }
+
+  return new Response(stream, { headers });
 }

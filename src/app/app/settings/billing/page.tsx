@@ -32,9 +32,14 @@ export default async function BillingPage() {
   if (!userId) redirect("/sign-in");
 
   const isPro = has({ plan: "user:pro" });
-  const { remaining, limit } = getRateLimitInfo(userId);
-  const usedToday = limit - remaining;
-  const usagePct = limit > 0 ? Math.round((usedToday / limit) * 100) : 0;
+
+  // Only calculate usage for free users — pro users have unlimited access
+  const usageData = !isPro ? getRateLimitInfo(userId) : null;
+  const usedToday = usageData ? usageData.limit - usageData.remaining : 0;
+  const usagePct =
+    usageData && usageData.limit > 0
+      ? Math.round((usedToday / usageData.limit) * 100)
+      : 0;
 
   return (
     <div className="flex flex-col gap-6">
@@ -79,7 +84,7 @@ export default async function BillingPage() {
       </Card>
 
       {/* Usage today (only for free users) */}
-      {!isPro && (
+      {!isPro && usageData && (
         <Card>
           <CardHeader>
             <CardTitle>Usage today</CardTitle>
@@ -89,12 +94,12 @@ export default async function BillingPage() {
             <div className="flex items-center justify-between text-sm">
               <span>Lookups used</span>
               <span className="font-medium tabular-nums">
-                {usedToday} / {limit}
+                {usedToday} / {usageData.limit}
               </span>
             </div>
             <Progress value={usagePct} className="h-2" />
             <p className="text-xs text-muted-foreground">
-              {remaining} lookups remaining today
+              {usageData.remaining} lookups remaining today
             </p>
           </CardContent>
         </Card>
