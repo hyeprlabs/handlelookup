@@ -1,22 +1,9 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Inter } from "next/font/google";
 import { JsonLd } from "@/components/json-ld";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { cn } from "@/lib/utils";
-
-const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://handlelookup.com"),
@@ -54,10 +41,8 @@ export default function RootLayout({
       signInFallbackRedirectUrl="/app/profile"
       signUpFallbackRedirectUrl="/app/profile"
     >
-      <html lang="en" className={cn("font-sans", inter.variable)}>
-        <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-        >
+      <html lang="en" className={cn("font-sans")}>
+        <body className="antialiased">
           <JsonLd
             data={{
               "@context": "https://schema.org",
