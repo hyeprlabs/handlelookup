@@ -1,67 +1,47 @@
-import { currentUser } from "@clerk/nextjs/server";
-import Link from "next/link";
+import { auth } from "@clerk/nextjs/server";
+import { PricingTable } from "@clerk/nextjs";
+import { redirect } from "next/navigation";
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { CheckIcon, ExternalLinkIcon, ZapIcon } from "lucide-react";
+import { CheckIcon, ZapIcon, Infinity } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import { getRateLimitInfo, DAILY_LIMIT } from "@/lib/rate-limit";
 
 const proFeatures = [
-  "50,000 API credits / month",
-  "240 requests / minute",
+  "Unlimited lookups per day",
   "65+ platforms",
-  "No ads",
+  "No daily cap, ever",
   "Priority support",
-  "Custom credit top-ups",
 ];
 
 const freeFeatures = [
-  "250 API credits / month",
-  "15 requests / minute",
-  "15 core platforms",
+  `${DAILY_LIMIT} free lookups / day`,
+  "Featured platforms",
   "Community support",
 ];
 
-function formatDate(iso: string | null | undefined) {
-  if (!iso) return null;
-  return new Date(iso).toLocaleDateString("en-US", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  });
-}
-
 export default async function BillingPage() {
-  const user = await currentUser();
-  if (!user) return null;
+  const { userId, has } = await auth();
+  if (!userId) redirect("/sign-in");
 
-  const meta = user.publicMetadata as {
-    plan?: string;
-    subscriptionStatus?: string;
-    currentPeriodEnd?: string;
-    polarSubscriptionId?: string;
-  };
-
-  const isPro = meta.plan === "pro";
-  const isActive =
-    meta.subscriptionStatus === "active" ||
-    meta.subscriptionStatus === "trialing";
-  const renewalDate = formatDate(meta.currentPeriodEnd);
+  const isPro = has({ plan: "user:pro" });
+  const { remaining, limit } = getRateLimitInfo(userId);
+  const usedToday = limit - remaining;
+  const usagePct = limit > 0 ? Math.round((usedToday / limit) * 100) : 0;
 
   return (
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="text-xl font-semibold">Billing</h1>
         <p className="text-sm text-muted-foreground">
-          Manage your subscription and payment details
+          Manage your subscription and usage
         </p>
       </div>
 
@@ -72,15 +52,19 @@ export default async function BillingPage() {
             <div>
               <CardTitle>Current plan</CardTitle>
               <CardDescription className="mt-1">
-                {isPro && isActive && renewalDate
-                  ? `Renews on ${renewalDate}`
-                  : isPro && !isActive
-                    ? "Your subscription is no longer active"
-                    : "Free plan — resets on the 1st of each month"}
+                {isPro
+                  ? "Pro — unlimited lookups across all platforms"
+                  : `Free — ${DAILY_LIMIT} lookups per day`}
               </CardDescription>
             </div>
-            <Badge variant={isPro && isActive ? "default" : "secondary"}>
-              {isPro && isActive ? "Pro" : "Free"}
+            <Badge variant={isPro ? "default" : "secondary"}>
+              {isPro ? (
+                <span className="flex items-center gap-1">
+                  <ZapIcon className="size-3 fill-current" /> Pro
+                </span>
+              ) : (
+                "Free"
+              )}
             </Badge>
           </div>
         </CardHeader>
@@ -92,102 +76,63 @@ export default async function BillingPage() {
             </div>
           ))}
         </CardContent>
-        <CardFooter className="flex flex-wrap items-center gap-2 border-t pt-4">
-          {isPro ? (
-            <>
-              <Button asChild size="sm" variant="outline">
-                <a href="/api/portal">
-                  Manage subscription
-                  <ExternalLinkIcon className="size-3.5" />
-                </a>
-              </Button>
-            </>
-          ) : (
-            <Button asChild size="sm">
-              <Link href="/pricing">
-                <ZapIcon className="size-3.5" />
-                Upgrade to Pro
-              </Link>
-            </Button>
-          )}
-        </CardFooter>
       </Card>
 
-      {/* Pro plan upsell (only shown on Free) */}
+      {/* Usage today (only for free users) */}
       {!isPro && (
         <Card>
           <CardHeader>
-            <CardTitle>Pro plan</CardTitle>
-            <CardDescription>Everything you need to scale</CardDescription>
+            <CardTitle>Usage today</CardTitle>
+            <CardDescription>Resets at midnight UTC</CardDescription>
           </CardHeader>
-          <CardContent className="flex flex-col gap-2.5">
-            {proFeatures.map((feature) => (
-              <div key={feature} className="flex items-center gap-2 text-sm">
-                <CheckIcon className="size-4 shrink-0" />
-                {feature}
-              </div>
-            ))}
-          </CardContent>
-          <CardFooter className="flex flex-wrap items-center justify-between gap-4 border-t pt-4">
-            <div>
-              <p className="text-sm font-medium">$29 / month</p>
-              <p className="text-xs text-muted-foreground">
-                or $278 / year (save 20%)
-              </p>
+          <CardContent className="flex flex-col gap-2">
+            <div className="flex items-center justify-between text-sm">
+              <span>Lookups used</span>
+              <span className="font-medium tabular-nums">
+                {usedToday} / {limit}
+              </span>
             </div>
-            <Button asChild size="sm">
-              <Link href="/pricing">Get Pro</Link>
-            </Button>
-          </CardFooter>
+            <Progress value={usagePct} className="h-2" />
+            <p className="text-xs text-muted-foreground">
+              {remaining} lookups remaining today
+            </p>
+          </CardContent>
         </Card>
       )}
 
-      {/* Usage */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Usage this month</CardTitle>
-          <CardDescription>API credits consumed</CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-2">
-          <div className="flex items-center justify-between text-sm">
-            <span>Credits used</span>
-            <span className="font-medium tabular-nums">
-              0 / {isPro ? "50,000" : "250"}
-            </span>
-          </div>
-          <Progress value={0} className="h-2" />
-          <p className="text-xs text-muted-foreground">
-            {isPro
-              ? "240 requests / minute · No ads"
-              : "15 requests / minute · Resets on the 1st of each month"}
-          </p>
-        </CardContent>
-      </Card>
+      {/* Pro usage indicator */}
+      {isPro && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Usage</CardTitle>
+            <CardDescription>Unlimited on Pro</CardDescription>
+          </CardHeader>
+          <CardContent className="flex items-center gap-3 text-sm">
+            <Infinity className="size-5 text-violet-500" />
+            <span>No daily limits on your plan</span>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* Invoices / portal link */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Invoices & receipts</CardTitle>
-          <CardDescription>
-            Access your full billing history and invoices
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Separator className="mb-4" />
-          <p className="text-sm text-muted-foreground">
-            All invoices and payment receipts are available in the Polar
-            customer portal.
-          </p>
-        </CardContent>
-        <CardFooter className="border-t pt-4">
-          <Button asChild size="sm" variant="outline">
-            <a href="/api/portal">
-              Open billing portal
-              <ExternalLinkIcon className="size-3.5" />
-            </a>
-          </Button>
-        </CardFooter>
-      </Card>
+      {/* Upgrade section — shown for free users */}
+      {!isPro && (
+        <Card className="overflow-hidden border-violet-500/20">
+          <div className="h-1 w-full bg-gradient-to-r from-violet-500 via-blue-500 to-cyan-500" />
+          <CardHeader>
+            <CardTitle>Upgrade to Pro</CardTitle>
+            <CardDescription>
+              Unlock unlimited lookups and all 65+ platforms
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Separator className="mb-4" />
+            {/* Clerk PricingTable handles the full checkout flow */}
+            <PricingTable
+              newSubscriptionRedirectUrl="/app/settings/billing?upgraded=true"
+            />
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

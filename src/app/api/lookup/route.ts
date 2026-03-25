@@ -1,7 +1,7 @@
 import { type NextRequest } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { checkAllPlatforms } from "@/lib/lookup";
-import { getRateLimitInfo, incrementUsage } from "@/lib/rate-limit";
+import { getRateLimitInfo, incrementUsage, DAILY_LIMIT } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -23,9 +23,26 @@ export async function GET(request: NextRequest) {
     return Response.json({ error: "Invalid handle" }, { status: 400 });
   }
 
-  const { userId } = await auth();
+  const { userId, has } = await auth();
 
-  if (!userId) {
+  if (userId) {
+    // Authenticated user — check if they have an active Pro subscription via Clerk Billing
+    const isPro = has({ plan: "user:pro" });
+
+    if (!isPro) {
+      // Free authenticated user — apply per-user daily limit
+      const { allowed } = getRateLimitInfo(userId);
+      if (!allowed) {
+        return Response.json(
+          { error: "Daily limit reached", code: "RATE_LIMITED" },
+          { status: 429 }
+        );
+      }
+      incrementUsage(userId);
+    }
+    // Pro users proceed without rate limiting
+  } else {
+    // Anonymous user — limit by IP
     const ip = getClientIp(request);
     const { allowed } = getRateLimitInfo(ip);
     if (!allowed) {
@@ -68,6 +85,7 @@ export async function GET(request: NextRequest) {
       "Cache-Control": "no-cache",
       Connection: "keep-alive",
       "X-Accel-Buffering": "no",
+      "X-Daily-Limit": String(DAILY_LIMIT),
     },
   });
 }

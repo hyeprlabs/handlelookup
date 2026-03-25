@@ -2,7 +2,7 @@
 
 import { useUser } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
-import { CheckIcon, ExternalLinkIcon } from "lucide-react";
+import { CheckIcon } from "lucide-react";
 import { TableBody, TableCell, TableHead, TableRow } from "@/components/ui/table";
 
 export type Interval = "monthly" | "yearly";
@@ -42,9 +42,6 @@ export function PricingCard({
   checkoutUrl,
 }: Props) {
   const { user, isLoaded } = useUser();
-  const userPlan = (user?.publicMetadata as { plan?: string } | undefined)
-    ?.plan;
-  const isUserPro = userPlan === "pro";
 
   const isYearly = interval === "yearly";
   const displayedPrice = isYearly ? product.yearlyPrice : product.monthlyPrice;
@@ -61,8 +58,7 @@ export function PricingCard({
   // Determine the CTA label, href, and variant based on auth + plan state
   let ctaHref: string;
   let ctaLabel: string;
-  let ctaIcon: React.ReactNode = null;
-  let ctaVariant: "default" | "outline" = product.isPopular
+  const ctaVariant: "default" | "outline" = product.isPopular
     ? "default"
     : "outline";
   const ctaAsChild = true;
@@ -71,19 +67,12 @@ export function PricingCard({
     if (!isLoaded) {
       ctaHref = "/pricing";
       ctaLabel = "Get started";
-    } else if (isUserPro) {
-      ctaHref = "/api/portal";
-      ctaLabel = "Manage subscription";
-      ctaVariant = "outline";
-      ctaIcon = <ExternalLinkIcon className="size-3.5" />;
     } else if (user) {
       ctaHref = checkoutUrl ?? "/pricing";
       ctaLabel = "Upgrade to Pro";
     } else {
-      // Sign in first, then come straight back to checkout
-      ctaHref = checkoutUrl
-        ? `/sign-in?redirect_url=${encodeURIComponent(checkoutUrl)}`
-        : "/sign-in?redirect_url=%2Fpricing";
+      // Sign in first, then redirect to pricing to complete checkout
+      ctaHref = "/sign-in?redirect_url=%2Fpricing";
       ctaLabel = "Get started";
     }
   } else {
@@ -118,7 +107,6 @@ export function PricingCard({
         >
           <a href={ctaHref}>
             {ctaLabel}
-            {ctaIcon}
           </a>
         </Button>
       </div>

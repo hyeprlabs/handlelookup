@@ -9,6 +9,7 @@ import {
   HelpCircle,
   Search,
   SlidersHorizontal,
+  Zap,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useQueryState, parseAsInteger } from "nuqs";
@@ -43,6 +44,7 @@ import {
 import { cn } from "@/lib/utils";
 import { CATEGORIES, PLATFORMS, type Category } from "@/lib/platforms";
 import type { PlatformResult } from "@/lib/lookup";
+import { UpgradeDialog } from "@/components/upgrade-dialog";
 
 // ── Constants ────────────────────────────────────────────────────────────
 
@@ -84,6 +86,7 @@ const fadeUp = {
 
 interface LimitInfo {
   authenticated: boolean;
+  plan?: "pro" | "free" | null;
   unlimited?: boolean;
   remaining?: number;
   limit?: number;
@@ -105,10 +108,18 @@ function getPageNumbers(current: number, total: number): (number | "ellipsis")[]
 
 // ── Sub-components ───────────────────────────────────────────────────────
 
-function LimitBadge({ info }: { info: LimitInfo | null }) {
+function LimitBadge({
+  info,
+  onUpgradeClick,
+}: {
+  info: LimitInfo | null;
+  onUpgradeClick: () => void;
+}) {
   if (!info || info.unlimited) return null;
   const { remaining = 0, limit = 5 } = info;
   const isEmpty = remaining === 0;
+  const isAuthFree = info.authenticated && info.plan === "free";
+
   return (
     <span
       className={cn(
@@ -120,7 +131,20 @@ function LimitBadge({ info }: { info: LimitInfo | null }) {
     >
       <span className={cn("size-1.5 rounded-full", isEmpty ? "bg-red-500" : "bg-emerald-500")} />
       {isEmpty ? (
-        <>Limit reached ·{" "}<Link href="/sign-in" className="underline underline-offset-2">Sign in</Link></>
+        isAuthFree ? (
+          <>
+            Limit reached ·{" "}
+            <button
+              onClick={onUpgradeClick}
+              className="inline-flex items-center gap-0.5 underline underline-offset-2"
+            >
+              <Zap className="size-2.5 fill-current" />
+              Upgrade
+            </button>
+          </>
+        ) : (
+          <>Limit reached ·{" "}<Link href="/sign-in" className="underline underline-offset-2">Sign in</Link></>
+        )
       ) : (
         `${remaining}/${limit} today`
       )}
@@ -281,6 +305,7 @@ export function LookupResults() {
   const [done, setDone] = useState(false);
   const [rateLimited, setRateLimited] = useState(false);
   const [limitInfo, setLimitInfo] = useState<LimitInfo | null>(null);
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
 
   const fetchLimitInfo = useCallback(() => {
@@ -300,7 +325,14 @@ export function LookupResults() {
     try {
       const response = await fetch(`/api/lookup?handle=${encodeURIComponent(handle)}`, { signal: controller.signal });
 
-      if (response.status === 429) { setRateLimited(true); setDone(true); fetchLimitInfo(); return; }
+      if (response.status === 429) {
+        setRateLimited(true);
+        setDone(true);
+        fetchLimitInfo();
+        // Automatically open upgrade dialog when rate-limited
+        setUpgradeOpen(true);
+        return;
+      }
       if (!response.ok || !response.body) { setDone(true); return; }
 
       const reader = response.body.getReader();
@@ -376,41 +408,68 @@ export function LookupResults() {
   const activeStatus = status ?? "all";
 
   return (
-    <AnimatePresence mode="wait">
-      {/* Idle state */}
-      {!q && <IdleState />}
+    <>
+      <UpgradeDialog
+        open={upgradeOpen}
+        onOpenChange={setUpgradeOpen}
+        authenticated={limitInfo?.authenticated ?? false}
+      />
 
-      {/* Rate-limited */}
-      {q && rateLimited && (
-        <motion.div
-          key="rate-limited"
-          {...fadeUp}
-          className="flex flex-col items-center justify-center px-4 py-20 text-center md:px-8"
-        >
-          <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full border bg-muted/40">
-            <XCircle className="size-4 text-muted-foreground" />
-          </div>
-          <p className="text-sm font-medium">Daily limit reached</p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            <Link href="/sign-in" className="underline underline-offset-2">Sign in</Link>{" "}
-            for unlimited lookups.
-          </p>
-        </motion.div>
-      )}
+      <AnimatePresence mode="wait">
+        {/* Idle state */}
+        {!q && <IdleState />}
 
-      {/* Results */}
-      {q && !rateLimited && (
-        <motion.div
-          key={q}
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -4 }}
-          transition={{ duration: 0.2, ease: EASE }}
-          className="w-full px-4 py-6 md:px-8"
-        >
-          {/* Handle + stats */}
+        {/* Rate-limited */}
+        {q && rateLimited && (
           <motion.div
-            className="mb-3 flex flex-wrap items-baseline justify-between gap-2"
+            key="rate-limited"
+            {...fadeUp}
+            className="flex flex-col items-center justify-center px-4 py-20 text-center md:px-8"
+          >
+            <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full border bg-muted/40">
+              <XCircle className="size-4 text-muted-foreground" />
+            </div>
+            <p className="text-sm font-medium">Daily limit reached</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {limitInfo?.authenticated ? (
+                <>
+                  Upgrade to Pro for unlimited lookups.{" "}
+                  <button
+                    onClick={() => setUpgradeOpen(true)}
+                    className="font-medium underline underline-offset-2"
+                  >
+                    See plans
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link href="/sign-in" className="underline underline-offset-2">
+                    Sign in
+                  </Link>{" "}
+                  for more free lookups, or{" "}
+                  <Link href="/pricing" className="underline underline-offset-2">
+                    upgrade to Pro
+                  </Link>{" "}
+                  for unlimited access.
+                </>
+              )}
+            </p>
+          </motion.div>
+        )}
+
+        {/* Results */}
+        {q && !rateLimited && (
+          <motion.div
+            key={q}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            transition={{ duration: 0.2, ease: EASE }}
+            className="w-full px-4 py-6 md:px-8"
+          >
+            {/* Handle + stats */}
+            <motion.div
+              className="mb-3 flex flex-wrap items-baseline justify-between gap-2"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.15, delay: 0.06 }}
@@ -466,7 +525,7 @@ export function LookupResults() {
                     </SelectItem>
                   </SelectContent>
                 </Select>
-                <LimitBadge info={limitInfo} />
+                <LimitBadge info={limitInfo} onUpgradeClick={() => setUpgradeOpen(true)} />
               </div>
             </div>
 
@@ -580,5 +639,6 @@ export function LookupResults() {
         </motion.div>
       )}
     </AnimatePresence>
+    </>
   );
 }
