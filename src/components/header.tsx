@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { Logo } from "@/components/logo";
+import { AtSign } from "lucide-react";
 import { useScroll } from "@/hooks/use-scroll";
 import { Button } from "@/components/ui/button";
 import { MobileNav } from "@/components/mobile-nav";
@@ -77,12 +77,12 @@ export function Header() {
 					}
 				)}
 			>
-				<a
-					className="rounded-md p-2 hover:bg-muted dark:hover:bg-muted/50"
-					href="#"
-				>
-					<Logo className="h-4" />
-				</a>
+				<Link className="rounded-md p-2 hover:bg-muted dark:hover:bg-muted/50" href="/">
+					<div className="flex items-center gap-2">
+						<AtSign className="size-4" />
+						<span className="text-sm font-semibold">Handle Lookup</span>
+					</div>
+				</Link>
 				<div className="hidden items-center gap-2 md:flex">
 					<div>
 						{navLinks.map((link) => (

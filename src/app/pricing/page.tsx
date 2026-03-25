@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
 import Link from "next/link";
 import { ArrowRightIcon } from "lucide-react";
 import { PricingTable } from "@clerk/nextjs";
@@ -8,8 +7,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { HeroSection } from "@/components/hero-section";
-import { SectionShell } from "@/components/pricing/section-shell";
 import { JsonLd } from "@/components/json-ld";
+import { DecorIcon } from "@/components/ui/decor-icon";
+import { FullWidthDivider } from "@/components/ui/full-width-divider";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -71,19 +71,39 @@ export default function Page() {
           }
         />
 
-        <div id="pricing">
-          <SectionShell
-            title="Choose your plan"
-            description="Start free — no credit card needed. Upgrade when you need more."
-            sectionId="pricing"
-          >
-            <div className="px-4 py-10 md:px-8">
-              <Suspense fallback={<Skeleton className="h-72 w-full rounded-xl" />}>
-                <PricingTable />
-              </Suspense>
-            </div>
-          </SectionShell>
-        </div>
+        <section id="pricing" className="relative mx-auto w-full max-w-5xl">
+          <DecorIcon className="size-4" position="top-left" />
+          <DecorIcon className="size-4" position="top-right" />
+          <DecorIcon className="size-4" position="bottom-left" />
+          <DecorIcon className="size-4" position="bottom-right" />
+
+          <FullWidthDivider className="-top-px" />
+
+          <div className="border-b bg-linear-to-b from-secondary/35 via-secondary/10 to-transparent px-3 py-10 md:px-4">
+            <p className="mb-2 text-center font-mono text-[11px] text-muted-foreground uppercase tracking-[0.18em]">
+              pricing
+            </p>
+            <h2 className="text-center font-semibold text-xl md:text-3xl">
+              Choose your plan
+            </h2>
+            <p className="mx-auto mt-2 max-w-2xl text-balance text-center text-muted-foreground text-sm md:text-base">
+              Start your 7-day free trial!
+            </p>
+          </div>
+
+          <div className="px-4 py-10 md:px-8">
+            <PricingTable
+              fallback={
+                <div className="flex flex-col gap-4 md:flex-row">
+                  <Skeleton className="h-[200px] w-full rounded-xl" />
+                  <Skeleton className="h-[200px] w-full rounded-xl" />
+                </div>
+              }
+            />
+          </div>
+
+          <FullWidthDivider className="-bottom-px" />
+        </section>
 
         <Footer />
       </main>

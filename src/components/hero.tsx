@@ -3,7 +3,7 @@ import { DecorIcon } from "@/components/ui/decor-icon";
 import { FullWidthDivider } from "@/components/ui/full-width-divider";
 import { LookupForm } from "@/components/lookup-form";
 
-export function HeroSection() {
+export function Hero() {
   return (
     <section>
       <div className="relative flex flex-col items-center justify-center gap-5 px-6 py-14 md:px-8 md:py-24 lg:py-28">

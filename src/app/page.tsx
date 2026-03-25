@@ -2,9 +2,8 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import { cn } from "@/lib/utils";
 import { Header } from "@/components/header"; // @efferd/header-2
-import { HeroSection } from "@/components/hero";
+import { Hero } from "@/components/hero";
 import { LookupResults } from "@/components/lookup-results";
-import { LogosSection } from "@/components/logos-section";
 import { CallToAction } from "@/components/cta";
 import { Footer } from "@/components/footer";
 import { JsonLd } from "@/components/json-ld";
@@ -64,10 +63,9 @@ export default function Page() {
         )}
       >
         <Suspense>
-          <HeroSection />
+          <Hero />
           <LookupResults />
         </Suspense>
-        <LogosSection />
         <CallToAction />
         <Footer />
       </main>
