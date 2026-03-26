@@ -17,5 +17,11 @@ export async function GET() {
   }
 
   const { remaining, limit, allowed } = await getRateLimitInfo(userId);
-  return Response.json({ authenticated: true, isPro: false, remaining, limit, allowed });
+  return Response.json({
+    authenticated: true,
+    isPro: false,
+    remaining,
+    limit,
+    allowed,
+  });
 }

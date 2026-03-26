@@ -6,7 +6,8 @@ export const metadata: Metadata = {
     template: "%s | Handle Lookup",
     default: "Handle Lookup",
   },
-  description: "Check username availability across 400+ platforms in one click.",
+  description:
+    "Check username availability across 400+ platforms in one click.",
   keywords: [
     "AI",
     "social media",
@@ -22,12 +23,14 @@ export const metadata: Metadata = {
     type: "website",
     url: "https://handlelookup.com",
     title: "Handle Lookup",
-    description: "Check username availability across 400+ platforms in one click.",
+    description:
+      "Check username availability across 400+ platforms in one click.",
     siteName: "Handle Lookup",
   },
   twitter: {
     card: "summary_large_image",
     title: "Handle Lookup",
-    description: "Check username availability across 400+ platforms in one click.",
+    description:
+      "Check username availability across 400+ platforms in one click.",
   },
 };

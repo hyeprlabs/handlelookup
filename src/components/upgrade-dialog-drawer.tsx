@@ -44,14 +44,15 @@ export function UpgradeDialogDrawer({ children }: UpgradeDialogDrawerProps) {
         <DialogTrigger asChild>{children}</DialogTrigger>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>
-              Upgrade your Plan
-            </DialogTitle>
+            <DialogTitle>Upgrade your Plan</DialogTitle>
             <DialogDescription>
               Unlimited lookups across 400+ platforms.
             </DialogDescription>
           </DialogHeader>
-          <div className="overflow-y-auto px-4 pt-4 pb-12" onClick={handleClick}>
+          <div
+            className="overflow-y-auto px-4 pt-4 pb-12"
+            onClick={handleClick}
+          >
             <PricingTable
               collapseFeatures={isMobile}
               fallback={
@@ -71,9 +72,7 @@ export function UpgradeDialogDrawer({ children }: UpgradeDialogDrawerProps) {
       <DrawerTrigger asChild>{children}</DrawerTrigger>
       <DrawerContent>
         <DrawerHeader className="text-left">
-          <DrawerTitle>
-            Upgrade your Plan
-          </DrawerTitle>
+          <DrawerTitle>Upgrade your Plan</DrawerTitle>
           <DrawerDescription>
             Unlimited lookups across 400+ platforms.
           </DrawerDescription>

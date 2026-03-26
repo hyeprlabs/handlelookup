@@ -3,7 +3,12 @@
 import { useUser } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { CheckIcon, ExternalLinkIcon } from "lucide-react";
-import { TableBody, TableCell, TableHead, TableRow } from "@/components/ui/table";
+import {
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+} from "@/components/ui/table";
 
 export type Interval = "monthly" | "yearly";
 
@@ -36,11 +41,7 @@ type Props = {
   checkoutUrl?: string;
 };
 
-export function PricingCard({
-  product,
-  interval,
-  checkoutUrl,
-}: Props) {
+export function PricingCard({ product, interval, checkoutUrl }: Props) {
   const { user, isLoaded } = useUser();
   const userPlan = (user?.publicMetadata as { plan?: string } | undefined)
     ?.plan;

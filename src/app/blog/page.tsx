@@ -15,15 +15,13 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     title: "Blog — Handle Lookup",
-    description:
-      "Tutorials, guides, and updates from the Handle Lookup team.",
+    description: "Tutorials, guides, and updates from the Handle Lookup team.",
     url: "https://handlelookup.com/blog",
   },
   twitter: {
     card: "summary_large_image",
     title: "Blog — Handle Lookup",
-    description:
-      "Tutorials, guides, and updates from the Handle Lookup team.",
+    description: "Tutorials, guides, and updates from the Handle Lookup team.",
   },
 };
 
@@ -64,7 +62,11 @@ export default function BlogPage() {
           "after:absolute after:-inset-y-14 after:-right-px after:w-px after:bg-border",
         )}
       >
-        <Suspense fallback={<div className="py-16 text-sm text-muted-foreground">Loading…</div>}>
+        <Suspense
+          fallback={
+            <div className="py-16 text-sm text-muted-foreground">Loading…</div>
+          }
+        >
           <BlogPageClient posts={posts} categories={categories} />
         </Suspense>
         <Footer />

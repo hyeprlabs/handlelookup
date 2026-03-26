@@ -19,7 +19,7 @@ export function Hero() {
             className={cn(
               "absolute -inset-x-20 inset-y-0 z-0 rounded-full",
               "bg-[radial-gradient(ellipse_at_center,theme(--color-foreground/.1),transparent,transparent)]",
-              "blur-[50px]"
+              "blur-[50px]",
             )}
           />
           <div className="absolute inset-y-0 left-4 w-px bg-linear-to-b from-transparent via-border to-border md:left-8" />
@@ -32,7 +32,7 @@ export function Hero() {
           <a
             className={cn(
               "group mx-auto flex w-fit items-center gap-3 rounded-full border bg-card p-1 shadow",
-              "fade-in slide-in-from-bottom-10 animate-in fill-mode-backwards transition-all delay-500 duration-500 ease-out"
+              "fade-in slide-in-from-bottom-10 animate-in fill-mode-backwards transition-all delay-500 duration-500 ease-out",
             )}
             href="/features"
           >
@@ -50,7 +50,7 @@ export function Hero() {
         <h1
           className={cn(
             "max-w-2xl text-balance text-center text-3xl text-foreground md:text-5xl lg:text-6xl",
-            "fade-in slide-in-from-bottom-10 animate-in fill-mode-backwards delay-100 duration-500 ease-out"
+            "fade-in slide-in-from-bottom-10 animate-in fill-mode-backwards delay-100 duration-500 ease-out",
           )}
         >
           Find Available Handles Across Platforms
@@ -59,10 +59,11 @@ export function Hero() {
         <p
           className={cn(
             "text-center text-muted-foreground text-sm tracking-wider sm:text-lg",
-            "fade-in slide-in-from-bottom-10 animate-in fill-mode-backwards delay-200 duration-500 ease-out"
+            "fade-in slide-in-from-bottom-10 animate-in fill-mode-backwards delay-200 duration-500 ease-out",
           )}
         >
-          Enter a username once and instantly see where it&apos;s available <br /> across hundreds of platforms.
+          Enter a username once and instantly see where it&apos;s available{" "}
+          <br /> across hundreds of platforms.
         </p>
 
         <div className="fade-in slide-in-from-bottom-10 flex w-fit animate-in items-center justify-center gap-3 fill-mode-backwards pt-2 delay-300 duration-500 ease-out">

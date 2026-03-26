@@ -45,14 +45,14 @@ export function LookupForm() {
         fallback={
           <Button asChild>
             <Link href="/sign-in">
-              <Search/>
+              <Search />
               Check
             </Link>
           </Button>
         }
       >
         <Button type="submit">
-          <Search/>
+          <Search />
           Check
         </Button>
       </Show>

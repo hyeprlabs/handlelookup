@@ -29,14 +29,25 @@ export default function Page() {
             {
               "@type": "BreadcrumbList",
               itemListElement: [
-                { "@type": "ListItem", position: 1, name: "Home", item: "https://handlelookup.com" },
-                { "@type": "ListItem", position: 2, name: "Pricing", item: "https://handlelookup.com/pricing" },
+                {
+                  "@type": "ListItem",
+                  position: 1,
+                  name: "Home",
+                  item: "https://handlelookup.com",
+                },
+                {
+                  "@type": "ListItem",
+                  position: 2,
+                  name: "Pricing",
+                  item: "https://handlelookup.com/pricing",
+                },
               ],
             },
             {
               "@type": "Product",
               name: "Handle Lookup Pro",
-              description: "Pro plan — unlimited handle checks across all platforms.",
+              description:
+                "Pro plan — unlimited handle checks across all platforms.",
               url: "https://handlelookup.com/pricing",
               brand: { "@id": "https://handlelookup.com/#organization" },
               offers: {

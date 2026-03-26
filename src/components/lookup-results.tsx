@@ -58,7 +58,8 @@ const STATUS_CFG = {
   available: {
     label: "Available",
     icon: CheckCircle2,
-    badge: "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+    badge:
+      "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
   },
   taken: {
     label: "Taken",
@@ -85,11 +86,18 @@ interface LimitInfo {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-function getPageNumbers(current: number, total: number): (number | "ellipsis")[] {
+function getPageNumbers(
+  current: number,
+  total: number,
+): (number | "ellipsis")[] {
   if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
   const pages: (number | "ellipsis")[] = [1];
   if (current > 3) pages.push("ellipsis");
-  for (let i = Math.max(2, current - 1); i <= Math.min(total - 1, current + 1); i++) {
+  for (
+    let i = Math.max(2, current - 1);
+    i <= Math.min(total - 1, current + 1);
+    i++
+  ) {
     pages.push(i);
   }
   if (current < total - 2) pages.push("ellipsis");
@@ -99,11 +107,7 @@ function getPageNumbers(current: number, total: number): (number | "ellipsis")[]
 
 // ── Sub-components ────────────────────────────────────────────────────────
 
-function LimitBadge({
-  info,
-}: {
-  info: LimitInfo | null;
-}) {
+function LimitBadge({ info }: { info: LimitInfo | null }) {
   if (!info || !info.authenticated || info.isPro || info.unlimited) return null;
 
   const remaining = info.remaining ?? 0;
@@ -114,9 +118,7 @@ function LimitBadge({
   if (isEmpty) {
     return (
       <UpgradeDialogDrawer>
-        <button
-          className="inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium text-muted-foreground transition-colors hover:border-foreground/20 hover:text-foreground"
-        >
+        <button className="inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium text-muted-foreground transition-colors hover:border-foreground/20 hover:text-foreground">
           <Zap className="size-3" />
           Upgrade
         </button>
@@ -131,7 +133,7 @@ function LimitBadge({
           "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors",
           isLow
             ? "border-foreground/30 text-foreground hover:bg-muted"
-            : "border-border text-muted-foreground hover:border-foreground/20 hover:text-foreground"
+            : "border-border text-muted-foreground hover:border-foreground/20 hover:text-foreground",
         )}
       >
         <span>
@@ -177,20 +179,35 @@ function StatsBar({
   );
 }
 
-function ResultCard({ result, index }: { result: PlatformResult; index: number }) {
+function ResultCard({
+  result,
+  index,
+}: {
+  result: PlatformResult;
+  index: number;
+}) {
   const cfg = STATUS_CFG[result.status];
   const Icon = cfg.icon;
   return (
     <motion.div
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.18, delay: Math.min(index * 0.015, 0.18), ease: EASE }}
+      transition={{
+        duration: 0.18,
+        delay: Math.min(index * 0.015, 0.18),
+        ease: EASE,
+      }}
     >
       <Card className="group gap-0 p-0 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
         <CardHeader className="flex items-center justify-between px-4 py-2.5">
-          <CardTitle className="text-sm font-medium">{result.platform}</CardTitle>
+          <CardTitle className="text-sm font-medium">
+            {result.platform}
+          </CardTitle>
           <CardAction>
-            <Badge variant="outline" className={cn("gap-1 text-[11px]", cfg.badge)}>
+            <Badge
+              variant="outline"
+              className={cn("gap-1 text-[11px]", cfg.badge)}
+            >
               <Icon className="size-3" />
               {cfg.label}
             </Badge>
@@ -308,7 +325,12 @@ function EmptyState({ onClear }: { onClear: () => void }) {
       <p className="mt-1 text-xs text-muted-foreground">
         No platforms match your current filters.
       </p>
-      <Button variant="ghost" size="sm" className="mt-4 h-7 text-xs" onClick={onClear}>
+      <Button
+        variant="ghost"
+        size="sm"
+        className="mt-4 h-7 text-xs"
+        onClick={onClear}
+      >
         Clear filters
       </Button>
     </motion.div>
@@ -362,7 +384,7 @@ export function LookupResults() {
   useEffect(() => {
     if (isLoaded && !isSignedIn && q) {
       router.push(
-        `/sign-up?redirect_url=${encodeURIComponent(`/?q=${encodeURIComponent(q)}`)}`
+        `/sign-up?redirect_url=${encodeURIComponent(`/?q=${encodeURIComponent(q)}`)}`,
       );
     }
   }, [isLoaded, isSignedIn, q, router]);
@@ -379,7 +401,7 @@ export function LookupResults() {
       try {
         const response = await fetch(
           `/api/lookup?handle=${encodeURIComponent(handle)}`,
-          { signal: controller.signal }
+          { signal: controller.signal },
         );
 
         if (response.status === 429) {
@@ -431,7 +453,7 @@ export function LookupResults() {
         }
       }
     },
-    [fetchLimitInfo]
+    [fetchLimitInfo],
   );
 
   useEffect(() => {
@@ -450,10 +472,23 @@ export function LookupResults() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [q, isLoaded, isSignedIn]);
 
-  const handleCategory = (v: string) => { setCategory(v); setPage(1); };
-  const handleStatus = (v: string) => { setStatus(v); setPage(1); };
-  const handleSearch = (v: string) => { setSearch(v); setPage(1); };
-  const clearFilters = () => { setCategory("all"); setStatus("all"); setSearch(""); };
+  const handleCategory = (v: string) => {
+    setCategory(v);
+    setPage(1);
+  };
+  const handleStatus = (v: string) => {
+    setStatus(v);
+    setPage(1);
+  };
+  const handleSearch = (v: string) => {
+    setSearch(v);
+    setPage(1);
+  };
+  const clearFilters = () => {
+    setCategory("all");
+    setStatus("all");
+    setSearch("");
+  };
 
   const filtered = useMemo(() => {
     let list = [...results];
@@ -474,7 +509,10 @@ export function LookupResults() {
   const totalPlatforms = PLATFORMS.length;
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const currentPage = Math.min(Math.max(1, page ?? 1), totalPages);
-  const paginated = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+  const paginated = filtered.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE,
+  );
   const skeletonCount =
     !done && currentPage === 1 ? Math.max(0, PAGE_SIZE - paginated.length) : 0;
 
@@ -485,7 +523,7 @@ export function LookupResults() {
         acc[r.category] = (acc[r.category] ?? 0) + 1;
         return acc;
       }, {}),
-    [results]
+    [results],
   );
 
   const activeCat = (category ?? "featured") as Category | "all";
@@ -546,11 +584,7 @@ export function LookupResults() {
             You&apos;ve used all {DAILY_LIMIT} free lookups for today.
           </p>
           <UpgradeDialogDrawer>
-            <Button
-              variant="outline"
-              size="sm"
-              className="mt-5"
-            >
+            <Button variant="outline" size="sm" className="mt-5">
               Upgrade plan
             </Button>
           </UpgradeDialogDrawer>
@@ -645,7 +679,7 @@ export function LookupResults() {
                       "transition-all duration-150 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                       isActive
                         ? "border-foreground/20 bg-foreground text-background"
-                        : "border-border bg-background text-muted-foreground hover:border-foreground/15 hover:text-foreground"
+                        : "border-border bg-background text-muted-foreground hover:border-foreground/15 hover:text-foreground",
                     )}
                   >
                     {cat.label}
@@ -656,7 +690,7 @@ export function LookupResults() {
                           "h-4 min-w-4 rounded-full px-1 text-[10px] font-semibold tabular-nums",
                           isActive
                             ? "bg-background/20 text-background"
-                            : "bg-muted text-muted-foreground"
+                            : "bg-muted text-muted-foreground",
                         )}
                       >
                         {count}
@@ -702,7 +736,7 @@ export function LookupResults() {
                         onClick={() => setPage(Math.max(1, currentPage - 1))}
                         className={cn(
                           "cursor-pointer select-none transition-opacity",
-                          currentPage <= 1 && "pointer-events-none opacity-40"
+                          currentPage <= 1 && "pointer-events-none opacity-40",
                         )}
                       />
                     </PaginationItem>
@@ -721,7 +755,7 @@ export function LookupResults() {
                             {p}
                           </PaginationLink>
                         </PaginationItem>
-                      )
+                      ),
                     )}
                     <PaginationItem>
                       <PaginationNext
@@ -731,7 +765,7 @@ export function LookupResults() {
                         className={cn(
                           "cursor-pointer select-none transition-opacity",
                           currentPage >= totalPages &&
-                            "pointer-events-none opacity-40"
+                            "pointer-events-none opacity-40",
                         )}
                       />
                     </PaginationItem>

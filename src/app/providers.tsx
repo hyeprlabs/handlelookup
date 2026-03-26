@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { ReactNode } from "react";
 
@@ -17,12 +17,8 @@ export function Providers({ children }: { children: ReactNode }) {
       signInFallbackRedirectUrl="/"
       signUpFallbackRedirectUrl="/"
     >
-      <NuqsAdapter>
-        {children}
-      </NuqsAdapter>
-      <Toaster
-        position="bottom-center"
-      />
+      <NuqsAdapter>{children}</NuqsAdapter>
+      <Toaster position="bottom-center" />
     </ClerkProvider>
   );
 }

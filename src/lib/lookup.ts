@@ -16,14 +16,14 @@ const TIMEOUT_MS = 10_000;
 
 function buildPayload(
   payload: Record<string, unknown>,
-  handle: string
+  handle: string,
 ): string {
   return JSON.stringify(payload).replace(/\{\}/g, handle);
 }
 
 async function checkPlatform(
   platform: Platform,
-  handle: string
+  handle: string,
 ): Promise<PlatformResult> {
   const profileUrl = platform.url.replace(/\{\}/g, handle);
   const start = Date.now();
@@ -32,7 +32,13 @@ async function checkPlatform(
   if (platform.regexCheck) {
     try {
       if (!new RegExp(platform.regexCheck).test(handle)) {
-        return { platform: platform.name, category: platform.category, url: profileUrl, status: "unknown", responseTime: 0 };
+        return {
+          platform: platform.name,
+          category: platform.category,
+          url: profileUrl,
+          status: "unknown",
+          responseTime: 0,
+        };
       }
     } catch {
       // ignore invalid regex
@@ -43,7 +49,7 @@ async function checkPlatform(
   // Use urlProbe if provided, otherwise use profile url
   const fetchUrl = (platform.urlProbe ?? platform.url).replace(
     /\{\}/g,
-    encodeURIComponent(handle)
+    encodeURIComponent(handle),
   );
 
   try {
@@ -54,14 +60,16 @@ async function checkPlatform(
       method: isPost ? "POST" : "GET",
       headers: {
         "User-Agent": USER_AGENT,
-        Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        Accept:
+          "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
         "Accept-Language": "en-US,en;q=0.9",
         ...(isPost ? { "Content-Type": "application/json" } : {}),
         ...platform.headers,
       },
-      body: isPost && platform.requestPayload
-        ? buildPayload(platform.requestPayload, handle)
-        : undefined,
+      body:
+        isPost && platform.requestPayload
+          ? buildPayload(platform.requestPayload, handle)
+          : undefined,
       redirect: "follow",
       signal: controller.signal,
     });
@@ -85,7 +93,7 @@ async function checkPlatform(
         const body = await response.text();
         const errorStrings = platform.errorMsg ?? [];
         const isNotFound = errorStrings.some((msg) =>
-          body.toLowerCase().includes(msg.toLowerCase())
+          body.toLowerCase().includes(msg.toLowerCase()),
         );
         return {
           platform: platform.name,
@@ -134,7 +142,7 @@ async function checkPlatform(
 export async function checkAllPlatforms(
   handle: string,
   onResult: (result: PlatformResult) => void,
-  concurrency = 50
+  concurrency = 50,
 ): Promise<void> {
   const queue = [...PLATFORMS];
   const worker = async () => {
@@ -145,7 +153,7 @@ export async function checkAllPlatforms(
     }
   };
   await Promise.all(
-    Array.from({ length: Math.min(concurrency, PLATFORMS.length) }, worker)
+    Array.from({ length: Math.min(concurrency, PLATFORMS.length) }, worker),
   );
 }
 

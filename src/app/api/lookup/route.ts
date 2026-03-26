@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
   if (!userId) {
     return Response.json(
       { error: "Authentication required", code: "UNAUTHENTICATED" },
-      { status: 401 }
+      { status: 401 },
     );
   }
 
@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
     if (!allowed) {
       return Response.json(
         { error: "Daily limit reached", code: "RATE_LIMITED" },
-        { status: 429 }
+        { status: 429 },
       );
     }
   }
@@ -44,7 +44,9 @@ export async function GET(request: NextRequest) {
     async start(controller) {
       const send = (data: object) => {
         try {
-          controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
+          controller.enqueue(
+            encoder.encode(`data: ${JSON.stringify(data)}\n\n`),
+          );
         } catch {
           // Client disconnected
         }
