@@ -16,6 +16,10 @@ export const navLinks = [
 		href: "/features",
 	},
 	{
+		label: "API",
+		href: "/features/api",
+	},
+	{
 		label: "Blog",
 		href: "/blog",
 	},
