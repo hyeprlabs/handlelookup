@@ -7,7 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { HeroSection } from "@/components/hero-section";
-import { JsonLd } from "@/components/json-ld";
+import { JsonLd } from "@/app/json-ld";
 import { DecorIcon } from "@/components/ui/decor-icon";
 import { FullWidthDivider } from "@/components/ui/full-width-divider";
 import { cn } from "@/lib/utils";

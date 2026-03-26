@@ -6,7 +6,7 @@ import { Hero } from "@/components/hero";
 import { LookupResults } from "@/components/lookup-results";
 import { CallToAction } from "@/components/cta";
 import { Footer } from "@/components/footer";
-import { JsonLd } from "@/components/json-ld";
+import { JsonLd } from "@/app/json-ld";
 
 export const metadata: Metadata = {
   title: "Check Username Availability Across 65+ Platforms",

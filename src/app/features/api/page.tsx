@@ -10,7 +10,7 @@ import { FeaturesSection } from "@/components/features/api/features-section";
 import { RequestFormatSection } from "@/components/features/api/request-format-section";
 import { ResponseFieldsSection } from "@/components/features/api/response-fields-section";
 import { Button } from "@/components/ui/button";
-import { JsonLd } from "@/components/json-ld";
+import { JsonLd } from "@/app/json-ld";
 
 export const metadata: Metadata = {
   title: "API Reference — Username Availability API",

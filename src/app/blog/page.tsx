@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import { cn } from "@/lib/utils";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
-import { JsonLd } from "@/components/json-ld";
+import { JsonLd } from "@/app/json-ld";
 import { getAllPosts, getAllCategories, serializePost } from "@/lib/blog";
 import { BlogPageClient } from "@/components/blog/blog-page-client";
 

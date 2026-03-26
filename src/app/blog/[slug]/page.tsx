@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
-import { JsonLd } from "@/components/json-ld";
+import { JsonLd } from "@/app/json-ld";
 import { getAllPosts, getPostBySlug, getPostUrl } from "@/lib/blog";
 import { MDXContent, mdxComponents } from "@/components/blog/mdx-content";
 import { DecorIcon } from "@/components/ui/decor-icon";

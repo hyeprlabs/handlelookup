@@ -11,7 +11,7 @@ import { HowItWorksSection } from "@/components/features/how-it-works-section";
 import { UseCasesSection } from "@/components/features/use-cases-section";
 import { PlatformCoverageSection } from "@/components/features/platform-coverage-section";
 import { WhySection } from "@/components/features/why-section";
-import { JsonLd } from "@/components/json-ld";
+import { JsonLd } from "@/app/json-ld";
 
 export const metadata: Metadata = {
   title: "Features — Username Availability API",
