@@ -3,7 +3,6 @@ import type { Metadata } from "next";
 import { cn } from "@/lib/utils";
 import { Header } from "@/components/header"; // @efferd/header-2
 import { Hero } from "@/components/hero";
-import { LookupResults } from "@/components/lookup-results";
 import { CallToAction } from "@/components/cta";
 import { Footer } from "@/components/footer";
 import { JsonLd } from "@/app/json-ld";
@@ -64,7 +63,6 @@ export default function Page() {
       >
         <Suspense>
           <Hero />
-          <LookupResults />
         </Suspense>
         <CallToAction />
         <Footer />
