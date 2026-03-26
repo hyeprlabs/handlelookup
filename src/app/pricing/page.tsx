@@ -1,21 +1,21 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
 import Link from "next/link";
 import { ArrowRightIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { PricingTable } from "@clerk/nextjs";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { HeroSection } from "@/components/hero-section";
-import { CreditsSection } from "@/components/pricing/credits-section";
-import { PricingSection } from "@/components/pricing/pricing-section";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { JsonLd } from "@/components/json-ld";
+import { JsonLd } from "@/app/json-ld";
+import { DecorIcon } from "@/components/ui/decor-icon";
+import { FullWidthDivider } from "@/components/ui/full-width-divider";
+import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "Pricing — Free & Pro Plans",
   description:
-    "Handle Lookup is free to start. Upgrade to Pro for higher API volume, broader platform coverage, and ad-free usage.",
+    "Start free with 5 lookups/day. Upgrade to Pro for unlimited handle checks across all platforms.",
   alternates: { canonical: "https://handlelookup.com/pricing" },
 };
 
@@ -47,7 +47,7 @@ export default function Page() {
               "@type": "Product",
               name: "Handle Lookup Pro",
               description:
-                "Pro plan for Handle Lookup — higher API volume, broader platform coverage, and ad-free usage.",
+                "Pro plan — unlimited handle checks across all platforms.",
               url: "https://handlelookup.com/pricing",
               brand: { "@id": "https://handlelookup.com/#organization" },
               offers: {
@@ -70,34 +70,51 @@ export default function Page() {
         )}
       >
         <HeroSection
-          title="Simple Pricing for Handle Search and API"
-          description="Choose Free for lightweight checks or Pro for ad-free usage, broader platform coverage, and production-grade API volume."
+          title="Simple Pricing"
+          description="Start free with 5 lookups/day. Upgrade to Pro for unlimited access across all platforms."
           actions={
-            <>
-              <Button asChild>
-                <Link href="#pricing">
-                  See plans
-                  <ArrowRightIcon />
-                </Link>
-              </Button>
-              <Button asChild variant="outline">
-                <Link href="/features/api">View API Docs</Link>
-              </Button>
-            </>
+            <Button asChild>
+              <Link href="#pricing">
+                See plans
+                <ArrowRightIcon />
+              </Link>
+            </Button>
           }
         />
 
-        <Suspense
-          fallback={
-            <div className="flex flex-col gap-4 py-8">
-              <Skeleton className="h-80 rounded-2xl" />
-              <Skeleton className="h-48 rounded-2xl" />
-            </div>
-          }
-        >
-          <PricingSection />
-          <CreditsSection />
-        </Suspense>
+        <section id="pricing" className="relative mx-auto w-full max-w-5xl">
+          <DecorIcon className="size-4" position="top-left" />
+          <DecorIcon className="size-4" position="top-right" />
+          <DecorIcon className="size-4" position="bottom-left" />
+          <DecorIcon className="size-4" position="bottom-right" />
+
+          <FullWidthDivider className="-top-px" />
+
+          <div className="border-b bg-linear-to-b from-secondary/35 via-secondary/10 to-transparent px-3 py-10 md:px-4">
+            <p className="mb-2 text-center font-mono text-[11px] text-muted-foreground uppercase tracking-[0.18em]">
+              pricing
+            </p>
+            <h2 className="text-center font-semibold text-xl md:text-3xl">
+              Choose your plan
+            </h2>
+            <p className="mx-auto mt-2 max-w-2xl text-balance text-center text-muted-foreground text-sm md:text-base">
+              Start your 7-day free trial!
+            </p>
+          </div>
+
+          <div className="px-4 py-10 md:px-8">
+            <PricingTable
+              fallback={
+                <div className="flex flex-col gap-4 md:flex-row">
+                  <Skeleton className="h-[200px] w-full rounded-xl" />
+                  <Skeleton className="h-[200px] w-full rounded-xl" />
+                </div>
+              }
+            />
+          </div>
+
+          <FullWidthDivider className="-bottom-px" />
+        </section>
 
         <Footer />
       </main>

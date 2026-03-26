@@ -5,14 +5,19 @@ import { AtSign } from "lucide-react";
 import { useScroll } from "@/hooks/use-scroll";
 import { Button } from "@/components/ui/button";
 import { MobileNav } from "@/components/mobile-nav";
-import { useAuth } from "@clerk/nextjs";
-import { UserDropdown } from "@/components/user-dropdown";
 import { Skeleton } from "@/components/ui/skeleton";
+import { UpgradeDialogDrawer } from "@/components/upgrade-dialog-drawer";
+import { UserDropdown } from "@/components/user-dropdown";
+import { ClerkLoaded, ClerkLoading, Show } from "@clerk/nextjs";
 
 export const navLinks = [
   {
     label: "Features",
     href: "/features",
+  },
+  {
+    label: "API",
+    href: "/features/api",
   },
   {
     label: "Blog",
@@ -24,9 +29,37 @@ export const navLinks = [
   },
 ];
 
+function Buttons() {
+  return (
+    <>
+      <ClerkLoading>
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-8 w-16 rounded-full" />
+          <Skeleton className="size-8 rounded-full" />
+        </div>
+      </ClerkLoading>
+      <ClerkLoaded>
+        <Show when="signed-out">
+          <Button asChild size="sm" variant="outline">
+            <Link href="/sign-in">Sign In</Link>
+          </Button>
+          <Button asChild size="sm">
+            <Link href="/sign-up">Get Started</Link>
+          </Button>
+        </Show>
+        <Show when={(has) => has({ plan: "free" })}>
+          <UpgradeDialogDrawer>
+            <Button size="sm">Upgrade</Button>
+          </UpgradeDialogDrawer>
+          <UserDropdown />
+        </Show>
+      </ClerkLoaded>
+    </>
+  );
+}
+
 export function Header() {
   const scrolled = useScroll(10);
-  const { isLoaded, isSignedIn } = useAuth();
 
   return (
     <header
@@ -63,28 +96,7 @@ export function Header() {
               </Button>
             ))}
           </div>
-          {!isLoaded ? (
-            <div className="flex items-center gap-2">
-              <Skeleton className="h-7 w-16 rounded-full" />
-              <Skeleton className="size-7 rounded-full" />
-            </div>
-          ) : isSignedIn ? (
-            <>
-              <Button asChild size="sm">
-                <Link href="/pricing">Upgrade</Link>
-              </Button>
-              <UserDropdown />
-            </>
-          ) : (
-            <>
-              <Button asChild size="sm" variant="outline">
-                <Link href="/sign-in">Sign In</Link>
-              </Button>
-              <Button asChild size="sm">
-                <Link href="/sign-up">Get Started</Link>
-              </Button>
-            </>
-          )}
+          <Buttons />
         </div>
         <MobileNav />
       </nav>

@@ -14,7 +14,9 @@ export function EmailCard({ user }: { user: User }) {
     <Card>
       <CardHeader>
         <CardTitle>Email addresses</CardTitle>
-        <CardDescription>Email addresses linked to your account</CardDescription>
+        <CardDescription>
+          Email addresses linked to your account
+        </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-2">
         {user.emailAddresses.map((email) => {

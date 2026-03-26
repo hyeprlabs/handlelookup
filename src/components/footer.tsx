@@ -113,7 +113,10 @@ const product = [
   { title: "API Docs", href: "/features/api" },
   { title: "Blog", href: "/blog" },
   { title: "Pricing", href: "/pricing" },
-  { title: "Changelog", href: "https://hyeprlabs.com/changelog?app=handlelookup" },
+  {
+    title: "Changelog",
+    href: "https://hyeprlabs.com/changelog?app=handlelookup",
+  },
 ];
 
 const company = [
@@ -125,15 +128,30 @@ const company = [
 ];
 
 const legal = [
-  { title: "Imprint", href: "https://hyeprlabs.com/legal/imprint?app=handlelookup" },
-  { title: "Privacy Policy", href: "https://hyeprlabs.com/legal/privacy-policy?app=handlelookup" },
-  { title: "Terms of Service", href: "https://hyeprlabs.com/legal/terms-of-service?app=handlelookup" },
+  {
+    title: "Imprint",
+    href: "https://hyeprlabs.com/legal/imprint?app=handlelookup",
+  },
+  {
+    title: "Privacy Policy",
+    href: "https://hyeprlabs.com/legal/privacy-policy?app=handlelookup",
+  },
+  {
+    title: "Terms of Service",
+    href: "https://hyeprlabs.com/legal/terms-of-service?app=handlelookup",
+  },
 ];
 
 const socialLinks = [
   { icon: <XIcon className="size-3.5" />, link: "https://x.com/hyeprlabs" },
-  { icon: <InstagramIcon className="size-3.5" />, link: "https://www.instagram.com/hyeprlabs" },
-  { icon: <LinkedinIcon className="size-3.5" />, link: "https://www.linkedin.com/company/hyeprlabs" },
+  {
+    icon: <InstagramIcon className="size-3.5" />,
+    link: "https://www.instagram.com/hyeprlabs",
+  },
+  {
+    icon: <LinkedinIcon className="size-3.5" />,
+    link: "https://www.linkedin.com/company/hyeprlabs",
+  },
 ];
 
 function XIcon(props: React.ComponentProps<"svg">) {

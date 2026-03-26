@@ -63,7 +63,11 @@ export function BlogPostCard({ post }: { post: SerializedPost }) {
       {post.tags.length > 0 && (
         <div className="mt-auto flex flex-wrap gap-1 pt-1">
           {post.tags.slice(0, 3).map((tag) => (
-            <Badge key={tag} variant="secondary" className="text-xs px-1.5 py-0">
+            <Badge
+              key={tag}
+              variant="secondary"
+              className="text-xs px-1.5 py-0"
+            >
               {tag}
             </Badge>
           ))}

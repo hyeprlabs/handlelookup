@@ -1,11 +1,11 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { cn } from "@/lib/utils";
 import { Header } from "@/components/header"; // @efferd/header-2
-import { HeroSection } from "@/components/hero";
-import { LogosSection } from "@/components/logos-section";
+import { Hero } from "@/components/hero";
 import { CallToAction } from "@/components/cta";
 import { Footer } from "@/components/footer";
-import { JsonLd } from "@/components/json-ld";
+import { JsonLd } from "@/app/json-ld";
 
 export const metadata: Metadata = {
   title: "Check Username Availability Across 65+ Platforms",
@@ -61,8 +61,9 @@ export default function Page() {
           "after:absolute after:-inset-y-14 after:-right-px after:w-px after:bg-border",
         )}
       >
-        <HeroSection />
-        <LogosSection />
+        <Suspense>
+          <Hero />
+        </Suspense>
         <CallToAction />
         <Footer />
       </main>

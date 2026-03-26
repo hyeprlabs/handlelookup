@@ -111,21 +111,14 @@ function KeyForm({
           }}
         />
       </div>
-      <Button
-        onClick={() => onSubmit(name)}
-        disabled={!name.trim() || pending}
-      >
+      <Button onClick={() => onSubmit(name)} disabled={!name.trim() || pending}>
         {pending ? "Creating…" : "Create key"}
       </Button>
     </div>
   );
 }
 
-function CreateKeyModal({
-  onCreated,
-}: {
-  onCreated: (key: Key) => void;
-}) {
+function CreateKeyModal({ onCreated }: { onCreated: (key: Key) => void }) {
   const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
   const isDesktop = useMediaQuery("(min-width: 768px)");
@@ -173,11 +166,7 @@ function CreateKeyModal({
           <DrawerTitle>{header.title}</DrawerTitle>
           <DrawerDescription>{header.description}</DrawerDescription>
         </DrawerHeader>
-        <KeyForm
-          className="px-4"
-          onSubmit={handleSubmit}
-          pending={pending}
-        />
+        <KeyForm className="px-4" onSubmit={handleSubmit} pending={pending} />
         <DrawerFooter>
           <DrawerClose asChild>
             <Button variant="outline">Cancel</Button>

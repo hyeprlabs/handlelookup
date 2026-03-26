@@ -62,10 +62,7 @@ export function BlogPageClient({ posts, categories }: Props) {
     "category",
     parseAsString.withDefault(ALL),
   );
-  const [search, setSearch] = useQueryState(
-    "q",
-    parseAsString.withDefault(""),
-  );
+  const [search, setSearch] = useQueryState("q", parseAsString.withDefault(""));
 
   const validCategory = [ALL, ...categories].includes(category)
     ? category

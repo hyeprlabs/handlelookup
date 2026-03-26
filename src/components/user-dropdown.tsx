@@ -30,8 +30,7 @@ export function UserDropdown() {
 
   if (!user) return null;
 
-  const name =
-    user.fullName || user.emailAddresses[0]?.emailAddress || "User";
+  const name = user.fullName || user.emailAddresses[0]?.emailAddress || "User";
   const abbr = initials(name) as string;
   const email = user.emailAddresses[0]?.emailAddress;
 
@@ -49,7 +48,9 @@ export function UserDropdown() {
         <DropdownMenuLabel className="px-2 py-2">
           <div className="text-sm font-medium text-foreground">{name}</div>
           {email && (
-            <div className="truncate text-xs text-muted-foreground">{email}</div>
+            <div className="truncate text-xs text-muted-foreground">
+              {email}
+            </div>
           )}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />

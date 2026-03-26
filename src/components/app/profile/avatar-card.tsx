@@ -34,9 +34,7 @@ export function AvatarCard({ user }: { user: User }) {
     <Card>
       <CardHeader>
         <CardTitle>Profile photo</CardTitle>
-        <CardDescription>
-          Shown on your profile and in comments
-        </CardDescription>
+        <CardDescription>Shown on your profile and in comments</CardDescription>
       </CardHeader>
 
       <CardContent>
